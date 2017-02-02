@@ -1,1 +1,1 @@
-# vscode-sds-module
+# node-sds

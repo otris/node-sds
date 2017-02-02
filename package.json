@@ -1,8 +1,8 @@
 {
-    "name": "vscode-sds-module",
+    "name": "node-sds",
     "version": "0.0.1",
     "main": "out/src/sds.js",
-    "typings": "out/src/vscode-sds-module.d.ts",
+    "typings": "out/src/node-sds.d.ts",
     "publisher": "otris-software",
     "author": {
         "name": "otris-software",

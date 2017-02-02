@@ -2,4 +2,4 @@
 *
 !.gitignore
 !.npmignore
-!vscode-sds-module.d.ts
+!node-sds.d.ts
