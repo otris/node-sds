@@ -1,0 +1,11 @@
+{
+    "name": "vscode-sds-module",
+    "version": "0.0.1",
+    "main": "out/src/sds.js",
+    "typings": "out/src/vscode-sds-module.d.ts",
+    "publisher": "otris-software",
+    "author": {
+        "name": "otris-software",
+        "email": "heller@otris"
+    }
+}

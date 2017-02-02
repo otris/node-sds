@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es6",
+        "outDir": "out",
+        "lib": [
+            "es6"
+        ],
+        "sourceMap": true,
+        "rootDir": ".",
+        "declaration": true
+    },
+    "exclude": [
+        "node_modules"
+    ],
+    "files": [
+        "src/cryptmd5.ts",
+        "src/log.ts",
+        "src/network.ts",
+        "src/sds.ts"
+    ]
+}
