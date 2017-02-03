@@ -1,6 +1,12 @@
 {
   "name": "node-sds",
   "version": "0.0.1",
+  "description": "Node.js module to communicate with JANUS-based apps",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/otris/node-sds"
+  },
+  "license": "MIT",
   "main": "out/src/sds.js",
   "typings": "out/src/node-sds.d.ts",
   "publisher": "otris-software",
