@@ -81,7 +81,7 @@ import * as cryptmd5 from './cryptmd5';
 import { Logger } from './log';
 import { htonl, ntohl, SocketLike } from './network';
 
-// for import from 'vscode-sds-module'
+// for import from 'node-sds'
 export * from './cryptmd5';
 export { Logger } from './log';
 export { htonl, ntohl, SocketLike } from './network';

@@ -1,11 +1,11 @@
-declare module 'vscode-sds-module' {
+declare module 'node-sds' {
 	export class Hash {
 	    value: string;
 	    constructor(value: string);
 	}
 
 }
-declare module 'vscode-sds-module' {
+declare module 'node-sds' {
 	export type LogLevel = 'Debug' | 'Info' | 'Warn' | 'Error';
 	export interface LogConfiguration {
 	    /** The name of the logfile. */
@@ -34,7 +34,7 @@ declare module 'vscode-sds-module' {
 	}
 
 }
-declare module 'vscode-sds-module' {
+declare module 'node-sds' {
 	/// <reference types="node" />
 	/**
 	 * Something that behaves like a bloody Node socket.
@@ -65,7 +65,7 @@ declare module 'vscode-sds-module' {
 import { EventEmitter } from 'events';
 import * as cryptmd5 from './cryptmd5';
 import { SocketLike } from './network';
-declare module 'vscode-sds-module' {
+declare module 'node-sds' {
 	/// <reference types="node" />
 	export enum Operation {
 	    ChangeUser = 27,
