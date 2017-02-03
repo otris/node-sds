@@ -8,6 +8,7 @@
         ],
         "sourceMap": true,
         "rootDir": ".",
+        "strictNullChecks": true,
         "declaration": true
     },
     "exclude": [
@@ -17,6 +18,8 @@
         "src/cryptmd5.ts",
         "src/log.ts",
         "src/network.ts",
-        "src/sds.ts"
+        "src/sds.ts",
+        "test/network.test.ts",
+        "test/sds.test.ts"
     ]
 }
