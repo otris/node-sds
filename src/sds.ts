@@ -157,7 +157,6 @@ export enum ParameterName {
     UserId = 40,
     Parameter = 48,
     Principal = 80,
-    FileName = 117,
 }
 
 export enum Type {
@@ -273,14 +272,17 @@ export class Message {
      * Create a "pdcCallOperation" message.
      *
      * @param {string} className: The class name and the operation name (e.g. "PortalScript.uploadScript")
-     * @param {string[]} paramList: The parameters of the operation (e.g. [scriptName, scriptSource])
+     * @param {string[]} paramList: The parameters of the operation (e.g. ["scriptName", "scriptSource as string"])
      */
-    public static pdcCallOperation(className: string, paramList: string[]): Message {
+    public static pdcCallOperation(className: string, paramList?: string[]): Message {
         let msg = new Message();
         msg.name = "pdcCallOperation";
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.PDCCallOperation]);
         msg.addString(ParameterName.ClassName, className);
-        msg.addStringList(ParameterName.Parameter, paramList);
+        if(paramList && 0 < paramList.length)
+        {
+            msg.addStringList(ParameterName.Parameter, paramList);
+        }
         return msg;
     }
 
@@ -331,36 +333,44 @@ export class Message {
      */
     public addStringList(parameterName: ParameterName, values: string[]): void {
         // head-part of parameter
-        // type and name
+        // add type and name
         this.add([Type.StringList, parameterName]);
 
         // data-part of parameter
 
-        // size of whole data part
-        // data-size + list-size + string1-size + string1 + string2-size + string2
-        let varSize = 32 + 32 + (32 + values[0].length) + (32 + values[1].length);
+        // solve size (bytes) of the data-part
+        let varSize = 0;
+        // size of data-size (number)
+        varSize += 32;
+        // size of list-size (number)
+        varSize += 32;
+        // TODO? merge loops
+        for(let i=0; i<values.length; i++) {
+            // size of the current string-size (number)
+            varSize += 32;
+            // size of the current string
+            varSize += values[i].length;
+        }
+
+        // add size (bytes) of the data-part
         let dataSize = Buffer.from([0, 0, 0, 0]);
         htonl(dataSize, 0, varSize);
         this.add(dataSize);
 
-        // size of list (number of elements)
-        let numElem = 2;
+        // add size of stringlist (number of elements)
+        let numElem = values.length;
         let listSize = Buffer.from([0, 0, 0, 0]);
         htonl(listSize, 0, numElem);
         this.add(listSize);
 
-        // size and value of all strings
-
-        let stringSize1 = Buffer.from([0, 0, 0, 0]);
-        htonl(stringSize1, 0, values[0].length + 1);
-        this.add(stringSize1);
-        this.add(term(values[0]));
-
-        let stringSize2 = Buffer.from([0, 0, 0, 0]);
-        htonl(stringSize2, 0, values[1].length + 1);
-        this.add(stringSize2);
-        this.add(term(values[1]));
-
+        // add size and value of all strings
+        // TODO? merge loops
+        for(let i=0; i<values.length; i++) {
+            let stringSize = Buffer.from([0, 0, 0, 0]);
+            htonl(stringSize, 0, values[i].length + 1);
+            this.add(stringSize);
+            this.add(term(values[i]));
+        }
     }
     
 
@@ -434,6 +444,54 @@ export class Response {
         const strLength = ntohl(this.buffer, paramIndex + 2) - 1;
         // Note: we expect here that the opposite party is a JANUS server compiled with UTF-8 support.
         return this.buffer.toString('utf8', paramIndex + 6, paramIndex + 6 + strLength);
+    }
+
+    public getStringFromList(name: ParameterName, index: number): string {
+        responseLog.debug(`getString(${ParameterName[name]})`);
+        if(index > 0)
+        {
+            responseLog.debug(`getStringFromList not implemented yet for index > 0`);
+            return '';
+        }
+        const paramIndex = this.getParamIndex(name);
+        const headType = this.buffer[paramIndex];
+        assert.ok((headType & ~Type.NullFlag) === Type.StringList);
+        if (headType & Type.NullFlag) {
+            return '';
+        }
+
+        // ----- header of parameter -----
+        // paramIndex[0]: type
+        // paramIndex[1]: name-code
+        // ----- data-part of parameter -----
+        // paramIndex[2..5]: size of data-part of the parameter (stringlist)
+        // paramIndex[6..9]: size of the stringlist (number of elements)
+        // paramIndex[10..13]: strLen: size of the first string (bytes)
+        // paramIndex[14...]: first string
+        // paramIndex[14 + strLen ...]: size of second string
+        // paramIndex[14 + strLen + 4 ...]: second string
+        // ...
+
+        //const dataPartSize = ntohl(this.buffer, paramIndex + 2);
+        const numElem = ntohl(this.buffer, paramIndex + 6);
+        if(0 == numElem || index >= numElem)
+        {
+            return '';
+        }
+
+        let offset = 0;
+        for(let i=0; i<index; i++)
+        {
+            const l = ntohl(this.buffer, paramIndex + 10 + offset);
+            offset += l;
+            offset += 4;
+        }
+        // TODO: test and use offset...
+
+        const strLen = ntohl(this.buffer, paramIndex + 10) - 1;
+        // Note: we expect here that the opposite party is a JANUS server compiled with UTF-8 support.
+        const str = this.buffer.toString('utf8', paramIndex + 14, paramIndex + 14 + strLen);
+        return str;
     }
 
     public getBool(name: ParameterName): boolean {
@@ -656,17 +714,18 @@ export class SDSConnection {
         });
     }
 
-    public pdcCallOperation(operation: string, paramList: string[]): Promise<void> {
+    public pdcCallOperation(operation: string, paramList: string[]): Promise<string> {
         connectionLog.debug(`changePrincipal`);
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<string>((resolve, reject) => {
             this.send(Message.pdcCallOperation(operation, paramList)).then((response: Response) => {
                 const result = response.getInt32(ParameterName.ReturnValue);
                 if(result === 0) {
-                    log.debug(`no operation called`);
-                    resolve();
+                    const returnedString = response.getStringFromList(ParameterName.Parameter, 0);
+                    resolve(returnedString);
                 } else if (result < 0) {
                     reject(new Error(`unable to call operation ${operation}`));
                 } else {
+                    // TODO: check this return value
                     resolve();
                 }
             });
