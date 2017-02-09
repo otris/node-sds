@@ -446,18 +446,13 @@ export class Response {
         return this.buffer.toString('utf8', paramIndex + 6, paramIndex + 6 + strLength);
     }
 
-    public getStringFromList(name: ParameterName, index: number): string {
+    public getStringList(name: ParameterName): string[] {
         responseLog.debug(`getString(${ParameterName[name]})`);
-        if(index > 0)
-        {
-            responseLog.debug(`getStringFromList not implemented yet for index > 0`);
-            return '';
-        }
         const paramIndex = this.getParamIndex(name);
         const headType = this.buffer[paramIndex];
         assert.ok((headType & ~Type.NullFlag) === Type.StringList);
         if (headType & Type.NullFlag) {
-            return '';
+            return [];
         }
 
         // ----- header of parameter -----
@@ -473,25 +468,23 @@ export class Response {
         // ...
 
         //const dataPartSize = ntohl(this.buffer, paramIndex + 2);
+
         const numElem = ntohl(this.buffer, paramIndex + 6);
-        if(0 == numElem || index >= numElem)
+        let returnList:string[] = [];
+        let listPtr = paramIndex + 10;
+        let strLen = 0;
+        let str = '';
+
+        for(let i=0; i<numElem; i++)
         {
-            return '';
+            strLen = ntohl(this.buffer, listPtr);
+            listPtr += 4;
+            str = this.buffer.toString('utf8', listPtr, listPtr + strLen - 1);
+            listPtr += strLen;
+            returnList.push(str);
         }
 
-        let offset = 0;
-        for(let i=0; i<index; i++)
-        {
-            const l = ntohl(this.buffer, paramIndex + 10 + offset);
-            offset += l;
-            offset += 4;
-        }
-        // TODO: test and use offset...
-
-        const strLen = ntohl(this.buffer, paramIndex + 10) - 1;
-        // Note: we expect here that the opposite party is a JANUS server compiled with UTF-8 support.
-        const str = this.buffer.toString('utf8', paramIndex + 14, paramIndex + 14 + strLen);
-        return str;
+        return returnList;
     }
 
     public getBool(name: ParameterName): boolean {
@@ -714,14 +707,14 @@ export class SDSConnection {
         });
     }
 
-    public pdcCallOperation(operation: string, paramList: string[]): Promise<string> {
+    public pdcCallOperation(operation: string, paramList: string[]): Promise<string[]> {
         connectionLog.debug(`changePrincipal`);
-        return new Promise<string>((resolve, reject) => {
+        return new Promise<string[]>((resolve, reject) => {
             this.send(Message.pdcCallOperation(operation, paramList)).then((response: Response) => {
                 const result = response.getInt32(ParameterName.ReturnValue);
                 if(result === 0) {
-                    const returnedString = response.getStringFromList(ParameterName.Parameter, 0);
-                    resolve(returnedString);
+                    const returnedList = response.getStringList(ParameterName.Parameter);
+                    resolve(returnedList);
                 } else if (result < 0) {
                     reject(new Error(`unable to call operation ${operation}`));
                 } else {

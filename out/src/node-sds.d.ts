@@ -238,7 +238,7 @@ declare module 'node-sds' {
 	    changeUser(username: string, password: cryptmd5.Hash): Promise<UserId>;
 	    changePrincipal(principalName: string): Promise<void>;
 	    runScriptOnServer(sourceCode: string): Promise<string>;
-	    pdcCallOperation(operation: string, paramList: string[]): Promise<void>;
+	    pdcCallOperation(operation: string, paramList: string[]): Promise<string[]>;
 	    errorMessage(errorCode: number): Promise<string>;
 	    /**
 	     * Send given message on the wire and immediately return a promise that is fulfilled whenever the response
