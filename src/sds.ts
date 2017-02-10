@@ -569,8 +569,17 @@ export class Response {
 let log = Logger.create('SDSProtocolTransport');
 
 export class SDSProtocolTransport extends EventEmitter {
+    private buffer: Buffer;
+    private bufferedLength: number;
+    private messageSize: number;
+    
     constructor(private socket: SocketLike) {
         super();
+
+        this.buffer = Buffer.alloc(INITIAL_BUFFER_SIZE);
+        this.bufferedLength = 0;
+        this.messageSize = 0;
+
         this.socket.on('data', (chunk: Buffer) => {
             this.scanParseAndEmit(chunk);
         });
@@ -597,10 +606,80 @@ export class SDSProtocolTransport extends EventEmitter {
         });
     }
 
+
     private scanParseAndEmit(chunk: Buffer): void {
         log.debug(printBytes('received', chunk));
-        let res = new Response(chunk);
-        this.emit('response', res);
+
+        if(chunk.equals(ACK))
+        {
+            let res = new Response(chunk);
+            this.emit('response', res);
+            return;
+        }
+
+        if(this.messageSize === 0)
+        {
+            // start of message
+
+            const size = ntohl(chunk, 0);
+
+            if (chunk.length === size) {
+                // Got whole message in one chunk. No need to copy anything
+                let res = new Response(chunk);
+                this.emit('response', res);
+                return;
+            }
+            else {
+                // message longer than chunk, so we'll need a buffer
+                this.buffer.fill(0);
+                this.bufferedLength = 0;
+
+                this.messageSize = size;
+            }
+        }
+
+
+        if (chunk.length < (this.messageSize - this.bufferedLength)) {
+            // No end of message, still wait, don't emit anything
+            this.appendToBuffer(chunk);
+            return;
+        }
+        else if (chunk.length === (this.messageSize - this.bufferedLength))
+        {
+            this.appendToBuffer(chunk);
+
+            // Buffer contains a complete response. Parse and emit
+            let res = new Response(this.buffer);
+            this.emit('response', res);
+
+            // reset variable
+            this.messageSize = 0;
+            return;
+        }
+
+        //else if(chunk.length > (this.messageSize - this.bufferedLength))
+        {
+            // received chunk longer than the message, so remainder is from next message
+            const lastByteIdx = this.messageSize - this.bufferedLength - 1;
+            let test = chunk.slice(0, lastByteIdx);
+            this.appendToBuffer(chunk.slice(0, lastByteIdx));
+            if ((lastByteIdx + 1) < chunk.length) {
+                // Continue with remainder
+                this.scanParseAndEmit(chunk.slice(lastByteIdx + 1));
+            }
+        }
+    }
+
+    private appendToBuffer(chunk: Buffer): void {
+        const spaceLeft = this.buffer.length - this.bufferedLength;
+        if (spaceLeft < chunk.length) {
+            const newCapacity = Math.max(this.bufferedLength + chunk.length, 1.5 * this.buffer.length);
+            let newBuffer = Buffer.alloc(newCapacity);
+            this.buffer.copy(newBuffer);
+            this.buffer = newBuffer;
+        }
+        chunk.copy(this.buffer, this.bufferedLength);
+        this.bufferedLength += chunk.length;
     }
 }
 
