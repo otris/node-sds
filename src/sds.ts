@@ -189,7 +189,6 @@ export class Message {
      */
     public static hello(): Message {
         let msg = Message.from(HELLO);
-        msg.name = "HELLO";
         msg.pack = (): Buffer => {
             return msg.buffer;
         };
@@ -203,7 +202,6 @@ export class Message {
      */
     public static disconnectClient(): Message {
         let msg = new Message();
-        msg.name = "disconnectClient";
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.DisconnectClient]);
         return msg;
     }
@@ -216,7 +214,6 @@ export class Message {
      */
     public static errorMessage(errorCode: number): Message {
         let msg = new Message();
-        msg.name = "errorMessage";
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.COMOperation]);
         msg.addInt32(ParameterName.Index, COMOperation.ErrorMessage);
         msg.addInt32(ParameterName.Value, errorCode);
@@ -233,7 +230,6 @@ export class Message {
      */
     public static changeUser(username: string, password: cryptmd5.Hash): Message {
         let msg = new Message();
-        msg.name = "changeUser";
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.ChangeUser]);
         msg.addString(ParameterName.User, username);
         msg.addString(ParameterName.Password, password.value);
@@ -247,7 +243,6 @@ export class Message {
      */
     public static changePrincipal(principalName: string): Message {
         let msg = new Message();
-        msg.name = "changePrincipal";
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.ChangePrincipal]);
         msg.addString(ParameterName.Principal, principalName);
         return msg;
@@ -260,7 +255,6 @@ export class Message {
      */
     public static runScriptOnServer(sourceCode: string): Message {
         let msg = new Message();
-        msg.name = "runScriptOnServer";
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.COMOperation]);
         msg.addInt32(ParameterName.Index, COMOperation.RunScriptOnServer);
         msg.addString(ParameterName.Parameter, sourceCode);
@@ -276,7 +270,6 @@ export class Message {
      */
     public static pdcCallOperation(className: string, paramList?: string[]): Message {
         let msg = new Message();
-        msg.name = "pdcCallOperation";
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.PDCCallOperation]);
         msg.addString(ParameterName.ClassName, className);
         if(paramList && 0 < paramList.length)
@@ -289,8 +282,6 @@ export class Message {
 
     private buffer: Buffer;
     private bufferedLength: number;
-
-    public name: string;
 
     constructor() {
         this.buffer = Buffer.alloc(INITIAL_BUFFER_SIZE);
@@ -721,7 +712,6 @@ export class SDSConnection {
 
             // Hello ack'ed, no SSL, send intro
             let msg = new Message();
-            msg.name = "connect";
             msg.add([0, 0, 0, 0, 0, 0, 0, 0, 0]);
             msg.add(Buffer.from(term(`vscode-janus-debug on ${os.platform()}`)));
             return this.send(msg);
@@ -819,10 +809,11 @@ export class SDSConnection {
      * Send given message on the wire and immediately return a promise that is fulfilled whenever the response
      * comes in or the timeout is reached.
      */
-    public send(msg: Message): Promise<Response> {
+    public send(msg: Message, errmsg?: string): Promise<Response> {
         let timeoutId;
         let timeout = new Promise<void>((resolve, reject) => {
-            timeoutId = setTimeout(reject, this._timeout || 6000, "send request timed out");
+            let err = errmsg? errmsg : '';
+            timeoutId = setTimeout(reject, this._timeout || 6000, err + "Request timed out");
         });
         let response: Promise<Response> = this.waitForResponse();
         this.transport.send(msg);
@@ -852,7 +843,7 @@ export class SDSConnection {
      */
     public disconnect(): Promise<void> {
         connectionLog.debug(`disconnect`);
-        return this.send(Message.disconnectClient()).then(() => {
+        return this.send(Message.disconnectClient(), 'disconnect: ').then(() => {
             return this.transport.disconnect();
         });
     }
