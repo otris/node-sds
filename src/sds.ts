@@ -777,7 +777,7 @@ export class SDSConnection {
     }
 
     public pdcCallOperation(operation: string, paramList: string[]): Promise<string[]> {
-        connectionLog.debug(`changePrincipal`);
+        connectionLog.debug(`pdcCallOperation`);
         return new Promise<string[]>((resolve, reject) => {
             this.send(Message.pdcCallOperation(operation, paramList)).then((response: Response) => {
                 const result = response.getInt32(ParameterName.ReturnValue);
