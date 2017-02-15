@@ -95,7 +95,8 @@ const FIRST_PARAM_INDEX = 13;
 /**
  * Return an array of all UTF-16 code units in given string plus a 0-terminus.
  *
- * Hint: The result looks pretty much like a C-style string.
+ * Hint: returns the code point of every character of the string, not the bytes
+ * 
  * @param {string} str An arbitrary string
  * @returns An array containing all code units plus a final '0'.
  */
@@ -104,6 +105,24 @@ function term(str: string): number[] {
     units.push(0);
     return units;
 }
+
+
+
+/**
+ * Return a buffer (the bytes) of an utf-8 string plus a 0-terminus.
+ *
+ * todo bom, replace "term"" calls
+ *
+ * @param {string} str An arbitrary string
+ * @returns An array containing all code units plus a final '0'.
+ */
+function utf8term(str: string): Buffer {
+    let buflen = Buffer.byteLength(str);
+    let buffer = Buffer.alloc(buflen+1, str, 'utf-8');
+    buffer[buflen] = 0;
+    return buffer;
+}
+
 
 /**
  * Return a string where all bytes in given Buffer object are printed conveniently in hexadecimal notation. Only useful
@@ -360,7 +379,7 @@ export class Message {
             let stringSize = Buffer.from([0, 0, 0, 0]);
             htonl(stringSize, 0, values[i].length + 1);
             this.add(stringSize);
-            this.add(term(values[i]));
+            this.add(utf8term(values[i]));
         }
     }
     
