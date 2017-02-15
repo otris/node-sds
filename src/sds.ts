@@ -808,11 +808,15 @@ export class SDSConnection {
      * Send given message on the wire and immediately return a promise that is fulfilled whenever the response
      * comes in or the timeout is reached.
      */
-    public send(msg: Message, errmsg?: string): Promise<Response> {
+    public send(msg: Message, errmsg?:string, debugServerMode?:boolean): Promise<Response> {
         let timeoutId;
+        let time = this._timeout || 6000;
+        if(debugServerMode) {
+            time = 0x7FFFFFFF;
+        }
         let timeout = new Promise<void>((resolve, reject) => {
             let err = errmsg? errmsg : '';
-            timeoutId = setTimeout(reject, this._timeout || 6000, err + "Request timed out");
+            timeoutId = setTimeout(reject, time, err + "Request timed out");
         });
         let response: Promise<Response> = this.waitForResponse();
         this.transport.send(msg);
