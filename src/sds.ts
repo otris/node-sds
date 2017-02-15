@@ -268,13 +268,13 @@ export class Message {
      * @param {string} className: The class name and the operation name (e.g. "PortalScript.uploadScript")
      * @param {string[]} paramList: The parameters of the operation (e.g. ["scriptName", "scriptSource as string"])
      */
-    public static pdcCallOperation(className: string, paramList?: string[]): Message {
+    public static pdcCallOperation(className: string, parameters = []): Message {
         let msg = new Message();
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.PDCCallOperation]);
         msg.addString(ParameterName.ClassName, className);
-        if(paramList && 0 < paramList.length)
+        if(parameters.length)
         {
-            msg.addStringList(ParameterName.Parameter, paramList);
+            msg.addStringList(ParameterName.Parameter, parameters);
         }
         return msg;
     }
@@ -466,8 +466,7 @@ export class Response {
         let strLen = 0;
         let str = '';
 
-        for(let i=0; i<numElem; i++)
-        {
+        for(let i=0; i<numElem; i++) {
             strLen = ntohl(this.buffer, listPtr);
             listPtr += 4;
             str = this.buffer.toString('utf8', listPtr, listPtr + strLen - 1);
@@ -776,10 +775,10 @@ export class SDSConnection {
         });
     }
 
-    public pdcCallOperation(operation: string, paramList: string[]): Promise<string[]> {
+    public pdcCallOperation(operation: string, parameters = [], debug = false): Promise<string[]> {
         connectionLog.debug(`pdcCallOperation`);
         return new Promise<string[]>((resolve, reject) => {
-            this.send(Message.pdcCallOperation(operation, paramList)).then((response: Response) => {
+            this.send(Message.pdcCallOperation(operation, parameters), '', debug).then((response: Response) => {
                 const result = response.getInt32(ParameterName.ReturnValue);
                 if(result === 0) {
                     const returnedList = response.getStringList(ParameterName.Parameter);
