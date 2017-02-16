@@ -287,7 +287,7 @@ export class Message {
      * @param {string} className: The class name and the operation name (e.g. "PortalScript.uploadScript")
      * @param {string[]} paramList: The parameters of the operation (e.g. ["scriptName", "scriptSource as string"])
      */
-    public static pdcCallOperation(className: string, parameters = []): Message {
+    public static pdcCallOperation(className: string, parameters: string[]): Message {
         let msg = new Message();
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.PDCCallOperation]);
         msg.addString(ParameterName.ClassName, className);
@@ -794,7 +794,7 @@ export class SDSConnection {
         });
     }
 
-    public pdcCallOperation(operation: string, parameters = [], debug = false): Promise<string[]> {
+    public pdcCallOperation(operation: string, parameters: string[], debug = false): Promise<string[]> {
         connectionLog.debug(`pdcCallOperation`);
         return new Promise<string[]>((resolve, reject) => {
             this.send(Message.pdcCallOperation(operation, parameters), '', debug).then((response: Response) => {
