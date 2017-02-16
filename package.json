@@ -7,8 +7,8 @@
     "url": "https://github.com/otris/node-sds"
   },
   "license": "MIT",
-  "main": "out/src/sds.js",
-  "typings": "out/src/node-sds.d.ts",
+  "main": "./out/src/main.js",
+  "typings": "./node-sds.d.ts",
   "publisher": "otris-software",
   "author": {
     "name": "otris-software",

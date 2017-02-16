@@ -81,10 +81,6 @@ import * as cryptmd5 from './cryptmd5';
 import { Logger } from './log';
 import { htonl, ntohl, SocketLike } from './network';
 
-// for import from 'node-sds'
-export * from './cryptmd5';
-export { Logger } from './log';
-export { htonl, ntohl, SocketLike } from './network';
 
 
 const HELLO: Buffer = Buffer.from('GGCH$1$$', 'ascii');
