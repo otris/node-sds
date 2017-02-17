@@ -1,0 +1,30 @@
+{
+  "extends": [
+    "tslint:recommended"
+  ],
+  "rules": {
+    "quotemark": [
+      "single"
+    ],
+    "no-console": [
+      false
+    ],
+    "no-bitwise": false,
+    "interface-name": [
+      true,
+      "never-prefix"
+    ],
+    "max-classes-per-file": [
+      false
+    ],
+    "variable-name": [
+      true,
+      "allow-leading-underscore"
+    ],
+    "object-literal-sort-keys": false,
+    "arrow-parens": false,
+    "only-arrow-functions": [
+      false
+    ]
+  }
+}
