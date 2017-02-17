@@ -1,8 +1,7 @@
 ﻿/*
-   SDS (or SDS2) is a synchronous binary application-layer protocol on top of TCP that "real" JANUS clients use to speak
-   to JANUS servers. I could not find any document describing the protocol but there is a C++ library that you can use
-   to "reverse-engineer" the protocol (You'll find it under `src/janus/2.9.6/srvclnt`) plus you can always analyze the
-   TCP stream with Wireshark. The protocol is one of those historic mistakes that never got fixed.
+   I could not find any document describing the protocol but there is a fairly easy to read C++ library that you can
+   use to "reverse-engineer" the protocol (You'll find it under `src/janus/2.9.6/srvclnt`) plus you can always analyze
+   the TCP stream with Wireshark.
 
    Layout of a Typical Message
 
