@@ -157,7 +157,7 @@ function printBytes(msg: string | undefined, buf: Buffer): string {
 export enum Operation {
     ChangeUser = 27,
     DisconnectClient = 49,
-    PDCCallOperation = 101,
+    CallClassOperation = 101,
     COMOperation = 199,
     ChangePrincipal = 203,
 }
@@ -169,7 +169,7 @@ export enum COMOperation {
 
 export enum ParameterName {
     ClientId = 1,
-    ClassName = 2,
+    ClassAndOp = 2,
     Value = 4,
     ReturnValue = 5,
     Index = 13,
@@ -284,15 +284,15 @@ export class Message {
 
     
     /**
-     * Create a "pdcCallOperation" message.
+     * Create a "callClassOperation" message.
      *
-     * @param {string} className: The class name and the operation name (e.g. "PortalScript.uploadScript")
-     * @param {string[]} paramList: The parameters of the operation (e.g. ["scriptName", "scriptSource as string"])
+     * @param {string} classAndOp: The class name and the operation name (e.g. "PortalScript.uploadScript")
+     * @param {string[]} parameters: The parameters of the operation (e.g. ["scriptName", "scriptSource as string"])
      */
-    public static pdcCallOperation(className: string, parameters: string[]): Message {
+    public static callClassOperation(classAndOp: string, parameters: string[]): Message {
         let msg = new Message();
-        msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.PDCCallOperation]);
-        msg.addString(ParameterName.ClassName, className);
+        msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.CallClassOperation]);
+        msg.addString(ParameterName.ClassAndOp, classAndOp);
         if(parameters.length)
         {
             msg.addStringList(ParameterName.Parameter, parameters);
@@ -794,16 +794,17 @@ export class SDSConnection {
         });
     }
 
-    public pdcCallOperation(operation: string, parameters: string[], debug = false): Promise<string[]> {
-        connectionLog.debug(`pdcCallOperation`);
+    // Calls function on server: PDClass::callOperation
+    public callClassOperation(classAndOp: string, parameters: string[], debug = false): Promise<string[]> {
+        connectionLog.debug(`callClassOperation`);
         return new Promise<string[]>((resolve, reject) => {
-            this.send(Message.pdcCallOperation(operation, parameters), '', debug).then((response: Response) => {
+            this.send(Message.callClassOperation(classAndOp, parameters), '', debug).then((response: Response) => {
                 const result = response.getInt32(ParameterName.ReturnValue);
                 if(result === 0) {
                     const returnedList = response.getStringList(ParameterName.Parameter);
                     resolve(returnedList);
                 } else if (result < 0) {
-                    reject(new Error(`unable to call operation ${operation}`));
+                    reject(new Error(`unable to call operation ${classAndOp}`));
                 } else {
                     // TODO: check this return value
                     resolve();
