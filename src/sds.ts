@@ -80,6 +80,7 @@ import * as os from 'os';
 import * as cryptmd5 from './cryptmd5';
 import { Logger } from './log';
 import { htonl, ntohl, SocketLike } from './network';
+import { timeout } from 'promised-timeout';
 
 
 
@@ -761,6 +762,8 @@ export class SDSConnection {
                     log.debug(`response contained user ID: ${userId}`);
                     resolve(userId);
                 }
+            }).catch((reason) => {
+                reject(reason);
             });
         });
     }
@@ -775,6 +778,8 @@ export class SDSConnection {
                 } else {
                     resolve();
                 }
+            }).catch((reason) => {
+                reject(reason);
             });
         });
     }
@@ -790,6 +795,8 @@ export class SDSConnection {
                 } else {
                     reject(new Error(`unable to execute script`));
                 }
+            }).catch((reason) => {
+                reject(reason);
             });
         });
     }
@@ -798,7 +805,7 @@ export class SDSConnection {
     public callClassOperation(classAndOp: string, parameters: string[], debug = false): Promise<string[]> {
         connectionLog.debug(`callClassOperation`);
         return new Promise<string[]>((resolve, reject) => {
-            this.send(Message.callClassOperation(classAndOp, parameters), '', debug).then((response: Response) => {
+            this.send(Message.callClassOperation(classAndOp, parameters), false, debug).then((response: Response) => {
                 const result = response.getInt32(ParameterName.ReturnValue);
                 if(result === 0) {
                     const returnedList = response.getStringList(ParameterName.Parameter);
@@ -809,6 +816,8 @@ export class SDSConnection {
                     // TODO: check this return value
                     resolve();
                 }
+            }).catch((reason) => {
+                reject(reason);
             });
         });
     }
@@ -816,35 +825,55 @@ export class SDSConnection {
 
     public errorMessage(errorCode: number): Promise<string> {
         connectionLog.debug(`errorMessage`);
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             this.send(Message.errorMessage(errorCode)).then((response: Response) => {
                 const reason: string = response.getString(ParameterName.ReturnValue);
                 resolve(reason);
+            }).catch((reason) => {
+                reject(reason);
             });
         });
     }
+
+
+
 
     /**
      * Send given message on the wire and immediately return a promise that is fulfilled whenever the response
      * comes in or the timeout is reached.
      */
-    public send(msg: Message, errmsg?:string, debugServerMode?:boolean): Promise<Response> {
-        let timeoutId;
-        let time = this._timeout || 6000;
-        if(debugServerMode) {
-            time = 0x7FFFFFFF;
+    public send(msg: Message, ignoreTimeout = false, debugServerMode?:boolean): Promise<any> {
+
+        // if send is called by disconnect, the server sends no response,
+        // so call send without timeout to avoid the timeout-reject
+        if(ignoreTimeout) {
+            this.transport.send(msg);
+            return new Promise<void>((resolve) => {
+                resolve();
+            });
         }
-        let timeout = new Promise<void>((resolve, reject) => {
-            let err = errmsg? errmsg : '';
-            timeoutId = setTimeout(reject, time, err + "Request timed out");
-        });
-        let response: Promise<Response> = this.waitForResponse();
-        this.transport.send(msg);
-        return Promise.race([response, timeout]).then((value) => {
-            clearTimeout(timeoutId);
-            return value;
-        });
+
+        // normal case: call send with timeout
+        else {
+            let timeoutId;
+            let ms = this._timeout || 6000;
+
+            if(debugServerMode) {
+                ms = 0x7FFFFFFF;
+            }
+
+            let response: Promise<Response> = this.waitForResponse();
+            this.transport.send(msg);
+
+            // clear timeouts if response finishes in time
+            // see motivation of npm promised-timeout
+            return timeout({promise: response,
+                            time: ms,
+                            error: new Error('Request timed out')});
+        }
     }
+
+
 
     /**
      * Set the time in milliseconds after all future requests will timeout.
@@ -866,7 +895,7 @@ export class SDSConnection {
      */
     public disconnect(): Promise<void> {
         connectionLog.debug(`disconnect`);
-        return this.send(Message.disconnectClient(), 'disconnect: ').then(() => {
+        return this.send(Message.disconnectClient(), true).then(() => {
             return this.transport.disconnect();
         });
     }
