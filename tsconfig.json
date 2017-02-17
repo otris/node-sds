@@ -21,6 +21,7 @@
         "src/network.ts",
         "src/sds.ts",
         "test/network.test.ts",
-        "test/sds.test.ts"
+        "test/sds.test.ts",
+        "test/cryptmd5.test.ts"
     ]
 }
