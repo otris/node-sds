@@ -84,9 +84,11 @@ import { htonl, ntohl, SocketLike } from './network';
 
 
 const HELLO: Buffer = Buffer.from('GGCH$1$$', 'ascii');
-const ACK: Buffer = Buffer.from(term('valid'));
+const ACK: Buffer = Buffer.from(term_utf8('valid'));
 const INITIAL_BUFFER_SIZE = 4 * 1024;
 const FIRST_PARAM_INDEX = 13;
+const UTF8_BOM = "\xEF\xBB\xBF";
+
 
 /**
  * Return an array of all UTF-16 code units in given string plus a 0-terminus.
@@ -107,17 +109,21 @@ function term(str: string): number[] {
 /**
  * Return a buffer (the bytes) of an utf-8 string plus a 0-terminus.
  *
- * todo bom, replace "term"" calls
- *
  * @param {string} str An arbitrary string
  * @returns An array containing all code units plus a final '0'.
  */
-function utf8term(str: string): Buffer {
-    let buflen = Buffer.byteLength(str);
-    let buffer = Buffer.alloc(buflen+1, str, 'utf-8');
-    buffer[buflen] = 0;
+function term_utf8(str: string): Buffer {
+    let bytestrlen = Buffer.byteLength(str);
+    let buffer = Buffer.alloc(bytestrlen + 1, str, 'utf-8');
+    buffer[bytestrlen] = 0;
     return buffer;
 }
+
+// not used
+function term_utf8bom(str: string): Buffer {
+    return term_utf8(UTF8_BOM + str);
+}
+
 
 
 /**
@@ -326,7 +332,7 @@ export class Message {
         let stringSize = Buffer.from([0, 0, 0, 0]);
         htonl(stringSize, 0, value.length + 1);
         this.add(stringSize);
-        this.add(term(value));
+        this.add(term_utf8(value));
     }
 
 
@@ -350,7 +356,6 @@ export class Message {
         varSize += 32;
         // size of list-size (number)
         varSize += 32;
-        // TODO? merge loops
         for(let i=0; i<values.length; i++) {
             // size of the current string-size (number)
             varSize += 32;
@@ -370,12 +375,11 @@ export class Message {
         this.add(listSize);
 
         // add size and value of all strings
-        // TODO? merge loops
         for(let i=0; i<values.length; i++) {
             let stringSize = Buffer.from([0, 0, 0, 0]);
             htonl(stringSize, 0, values[i].length + 1);
             this.add(stringSize);
-            this.add(utf8term(values[i]));
+            this.add(term_utf8(values[i]));
         }
     }
     
@@ -727,7 +731,7 @@ export class SDSConnection {
             // Hello ack'ed, no SSL, send intro
             let msg = new Message();
             msg.add([0, 0, 0, 0, 0, 0, 0, 0, 0]);
-            msg.add(Buffer.from(term(`vscode-janus-debug on ${os.platform()}`)));
+            msg.add(Buffer.from(term_utf8(`vscode-janus-debug on ${os.platform()}`)));
             return this.send(msg);
 
         }).then((response: Response) => {
