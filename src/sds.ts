@@ -85,6 +85,7 @@ import { timeout } from 'promised-timeout';
 
 const HELLO: Buffer = Buffer.from('GGCH$1$$', 'ascii');
 const ACK: Buffer = Buffer.from(term_utf8('valid'));
+const INVALID: Buffer = Buffer.from('invalid', 'ascii');
 const INITIAL_BUFFER_SIZE = 4 * 1024;
 const FIRST_PARAM_INDEX = 13;
 const UTF8_BOM = "\xEF\xBB\xBF";
@@ -619,7 +620,7 @@ export class SDSProtocolTransport extends EventEmitter {
     private scanParseAndEmit(chunk: Buffer): void {
         log.debug(printBytes('received', chunk));
 
-        if(chunk.equals(ACK))
+        if(chunk.equals(ACK) || chunk.equals(INVALID))
         {
             let res = new Response(chunk);
             this.emit('response', res);
