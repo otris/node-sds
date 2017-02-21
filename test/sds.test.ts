@@ -149,7 +149,7 @@ suite('SDS protocol tests', () => {
                     socket.emit('data', Buffer.from('invalid', 'ascii'));
                 };
 
-                connection.connect().then(() => {
+                connection.connect('Test').then(() => {
                     done(new Error('expected exception to be thrown'));
                 }).catch(err => {
                     assert.equal('Error: server refused connection', err);

@@ -717,7 +717,7 @@ export class SDSConnection {
      * Connect to server.
      *
      */
-    public connect(): Promise<void> {
+    public connect(clientName: string): Promise<void> {
         connectionLog.debug(`connect`);
         return this.send(Message.hello()).then((response: Response) => {
 
@@ -732,7 +732,7 @@ export class SDSConnection {
             // Hello ack'ed, no SSL, send intro
             let msg = new Message();
             msg.add([0, 0, 0, 0, 0, 0, 0, 0, 0]);
-            msg.add(Buffer.from(term_utf8(`vscode-janus-debug on ${os.platform()}`)));
+            msg.add(Buffer.from(term_utf8(`${clientName} on ${os.platform()}`)));
             return this.send(msg);
 
         }).then((response: Response) => {
