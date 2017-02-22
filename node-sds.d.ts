@@ -1,2 +1,2 @@
 /// <reference path="./src/main.ts"/>
-export * from './out/src/main';
+export * from './src/main';
