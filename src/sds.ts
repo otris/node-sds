@@ -95,7 +95,7 @@ const UTF8_BOM = "\xEF\xBB\xBF";
  * Return an array of all UTF-16 code units in given string plus a 0-terminus.
  *
  * Hint: returns the code point of every character of the string, not the bytes
- * 
+ *
  * @param {string} str An arbitrary string
  * @returns An array containing all code units plus a final '0'.
  */
@@ -283,7 +283,7 @@ export class Message {
         return msg;
     }
 
-    
+
     /**
      * Create a "callClassOperation" message.
      *
@@ -294,8 +294,7 @@ export class Message {
         let msg = new Message();
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.CallClassOperation]);
         msg.addString(ParameterName.ClassAndOp, classAndOp);
-        if(parameters.length)
-        {
+        if(parameters.length) {
             msg.addStringList(ParameterName.Parameter, parameters);
         }
         return msg;
@@ -383,7 +382,7 @@ export class Message {
             this.add(term_utf8(values[i]));
         }
     }
-    
+
 
     public addInt32(parameterName: ParameterName, value: number): void {
         this.add([Type.Int32, parameterName]);
@@ -478,7 +477,7 @@ export class Response {
         // paramIndex[14 + strLen + 4 ...]: second string
         // ...
 
-        //const dataPartSize = ntohl(this.buffer, paramIndex + 2);
+        // const dataPartSize = ntohl(this.buffer, paramIndex + 2);
 
         const numElem = ntohl(this.buffer, paramIndex + 6);
         let returnList:string[] = [];
@@ -582,7 +581,7 @@ export class SDSProtocolTransport extends EventEmitter {
     private buffer: Buffer;
     private bufferedLength: number;
     private messageSize: number;
-    
+
     constructor(private socket: SocketLike) {
         super();
 
@@ -620,15 +619,13 @@ export class SDSProtocolTransport extends EventEmitter {
     private scanParseAndEmit(chunk: Buffer): void {
         log.debug(printBytes('received', chunk));
 
-        if(chunk.equals(ACK) || chunk.equals(INVALID))
-        {
+        if(chunk.equals(ACK) || chunk.equals(INVALID)) {
             let res = new Response(chunk);
             this.emit('response', res);
             return;
         }
 
-        if(this.messageSize === 0)
-        {
+        if(this.messageSize === 0) {
             // start of message
 
             const size = ntohl(chunk, 0);
@@ -667,7 +664,7 @@ export class SDSProtocolTransport extends EventEmitter {
             return;
         }
 
-        //else if(chunk.length > (this.messageSize - this.bufferedLength))
+        // else if(chunk.length > (this.messageSize - this.bufferedLength))
         {
             // received chunk longer than the message, so remainder is from next message
             const lastByteIdx = this.messageSize - this.bufferedLength - 1;
@@ -821,7 +818,7 @@ export class SDSConnection {
             });
         });
     }
-    
+
 
     public errorMessage(errorCode: number): Promise<string> {
         connectionLog.debug(`errorMessage`);

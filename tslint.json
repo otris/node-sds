@@ -25,6 +25,7 @@
     "arrow-parens": false,
     "only-arrow-functions": [
       false
-    ]
+    ],
+    "no-consecutive-blank-lines": false
   }
 }
