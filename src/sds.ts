@@ -76,12 +76,10 @@ import * as assert from 'assert';
 import { EventEmitter } from 'events';
 import { connect } from 'net';
 import * as os from 'os';
+import { timeout } from 'promised-timeout';
 import * as cryptmd5 from './cryptmd5';
 import { Logger } from './log';
 import { htonl, ntohl, SocketLike } from './network';
-import { timeout } from 'promised-timeout';
-
-
 
 const HELLO: Buffer = Buffer.from('GGCH$1$$', 'ascii');
 const ACK: Buffer = Buffer.from(term_utf8('valid'));
@@ -294,7 +292,7 @@ export class Message {
         let msg = new Message();
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.CallClassOperation]);
         msg.addString(ParameterName.ClassAndOp, classAndOp);
-        if(parameters.length) {
+        if (parameters.length) {
             msg.addStringList(ParameterName.Parameter, parameters);
         }
         return msg;
@@ -480,12 +478,12 @@ export class Response {
         // const dataPartSize = ntohl(this.buffer, paramIndex + 2);
 
         const numElem = ntohl(this.buffer, paramIndex + 6);
-        let returnList:string[] = [];
+        let returnList: string[] = [];
         let listPtr = paramIndex + 10;
         let strLen = 0;
         let str = '';
 
-        for(let i=0; i<numElem; i++) {
+        for (let i = 0; i < numElem; i++) {
             strLen = ntohl(this.buffer, listPtr);
             listPtr += 4;
             str = this.buffer.toString('utf8', listPtr, listPtr + strLen - 1);
@@ -619,13 +617,13 @@ export class SDSProtocolTransport extends EventEmitter {
     private scanParseAndEmit(chunk: Buffer): void {
         log.debug(printBytes('received', chunk));
 
-        if(chunk.equals(ACK) || chunk.equals(INVALID)) {
+        if (chunk.equals(ACK) || chunk.equals(INVALID)) {
             let res = new Response(chunk);
             this.emit('response', res);
             return;
         }
 
-        if(this.messageSize === 0) {
+        if (this.messageSize === 0) {
             // start of message
 
             const size = ntohl(chunk, 0);
@@ -635,8 +633,7 @@ export class SDSProtocolTransport extends EventEmitter {
                 let res = new Response(chunk);
                 this.emit('response', res);
                 return;
-            }
-            else {
+            } else {
                 // message longer than chunk, so we'll need a buffer
                 this.buffer.fill(0);
                 this.bufferedLength = 0;
@@ -650,9 +647,7 @@ export class SDSProtocolTransport extends EventEmitter {
             // No end of message, still wait, don't emit anything
             this.appendToBuffer(chunk);
             return;
-        }
-        else if (chunk.length === (this.messageSize - this.bufferedLength))
-        {
+        } else if (chunk.length === (this.messageSize - this.bufferedLength)) {
             this.appendToBuffer(chunk);
 
             // Buffer contains a complete response. Parse and emit
@@ -804,7 +799,7 @@ export class SDSConnection {
         return new Promise<string[]>((resolve, reject) => {
             this.send(Message.callClassOperation(classAndOp, parameters), false, debug).then((response: Response) => {
                 const result = response.getInt32(ParameterName.ReturnValue);
-                if(result === 0) {
+                if (result === 0) {
                     const returnedList = response.getStringList(ParameterName.Parameter);
                     resolve(returnedList);
                 } else if (result < 0) {
@@ -839,23 +834,23 @@ export class SDSConnection {
      * Send given message on the wire and immediately return a promise that is fulfilled whenever the response
      * comes in or the timeout is reached.
      */
-    public send(msg: Message, ignoreTimeout = false, debugServerMode?:boolean): Promise<any> {
+    public send(msg: Message, ignoreTimeout = false, debugServerMode?: boolean): Promise<any> {
 
         // if send is called by disconnect, the server sends no response,
         // so call send without timeout to avoid the timeout-reject
-        if(ignoreTimeout) {
+        if (ignoreTimeout) {
             this.transport.send(msg);
             return new Promise<void>((resolve) => {
                 resolve();
             });
-        }
+        } else {
 
-        // normal case: call send with timeout
-        else {
+            // normal case: call send with timeout
+
             let timeoutId;
             let ms = this._timeout || 6000;
 
-            if(debugServerMode) {
+            if (debugServerMode) {
                 ms = 0x7FFFFFFF;
             }
 
@@ -864,13 +859,13 @@ export class SDSConnection {
 
             // clear timeouts if response finishes in time
             // see motivation of npm promised-timeout
-            return timeout({promise: response,
-                            time: ms,
-                            error: new Error('Request timed out')});
+            return timeout({
+                promise: response,
+                time: ms,
+                error: new Error('Request timed out'),
+            });
         }
     }
-
-
 
     /**
      * Set the time in milliseconds after all future requests will timeout.

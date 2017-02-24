@@ -49,7 +49,9 @@ suite('SDS protocol tests', () => {
             const bytes = [0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01];
             const res = new Response(Buffer.from(bytes));
             assert.ok(res.isSimple());
-            assert.throws(() => { res.getInt32(ParameterName.ReturnValue); }, 'simple response cannot have a parameter');
+            assert.throws(() => {
+                res.getInt32(ParameterName.ReturnValue);
+            }, 'simple response cannot have a parameter');
         });
     });
 
