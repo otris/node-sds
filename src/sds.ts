@@ -356,11 +356,11 @@ export class Message {
         varSize += 32;
         // size of list-size (number)
         varSize += 32;
-        for(let i=0; i<values.length; i++) {
+        for (let value of values) {
             // size of the current string-size (number)
             varSize += 32;
             // size of the current string
-            varSize += values[i].length;
+            varSize += value.length;
         }
 
         // add size (bytes) of the data-part
@@ -375,11 +375,11 @@ export class Message {
         this.add(listSize);
 
         // add size and value of all strings
-        for(let i=0; i<values.length; i++) {
+        for (let value of values) {
             let stringSize = Buffer.from([0, 0, 0, 0]);
-            htonl(stringSize, 0, values[i].length + 1);
+            htonl(stringSize, 0, value.length + 1);
             this.add(stringSize);
-            this.add(term_utf8(values[i]));
+            this.add(term_utf8(value));
         }
     }
 
