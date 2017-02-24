@@ -9,6 +9,7 @@
             "type": "node",
             "request": "launch",
             "cwd": "${workspaceRoot}",
+            "preLaunchTask": "compile",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
             "args": [
                 "-u", "tdd",
@@ -16,7 +17,7 @@
                 "--colors",
                 "./out/test/"
             ],
-            "runtimeExecutable": "C:/Program Files/nodejs/node.exe",
+            "runtimeExecutable": "node",
             "runtimeArgs": [
                 "--nolazy"
             ],
