@@ -22,7 +22,10 @@
                 "--nolazy"
             ],
             "sourceMaps": true,
-            "outFiles": ["${workspaceRoot}/out/src/*.js"],
+            "outFiles": [
+                "${workspaceRoot}/out/src/*.js",
+                "${workspaceRoot}/out/test/*.js"
+            ],
             "internalConsoleOptions": "openOnSessionStart"
         }
     ]
