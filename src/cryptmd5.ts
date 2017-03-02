@@ -66,6 +66,17 @@ export class Hash {
     constructor(public value: string) { }
 }
 
+
+export function janus_hash(password: string, salt: string): Hash {
+    if('' === password) {
+        return new Hash('');
+    } else {
+        return crypt_md5(password, salt);
+    }
+}
+
+
+
 /**
  * Mimics POSIX crypt(3) with MD5 instead of DES.
  * @param {string} key A user's typed secret.
