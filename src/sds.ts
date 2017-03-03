@@ -243,16 +243,24 @@ export class Message {
     /**
      * Create a "ChangeUser" message.
      *
-     * This message logs in the given user.
+     * This message logs in the given user. The username is usually prepended with the principal name followed by a dot
+     * (e.g., 'duckburg.mickey'). In this case, the server expects that the next message it receives will be
+     * 'ChangePrincipal'. If not the server will disconnect.
      *
-     * @param {string} username The user to login. Can be with principal name (e.g., 'duckburg.mickey').
-     * @param {Hash} password The user's password hashed with crypt_md5.
+     * The password is allowed to be empty.
+     *
+     * @param {string} username The user to login.
+     * @param {Hash} password The user's password hashed with crypt_md5 or the empty string.
      */
-    public static changeUser(username: string, password: cryptmd5.Hash): Message {
+    public static changeUser(username: string, password: cryptmd5.Hash | ''): Message {
         let msg = new Message();
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.ChangeUser]);
         msg.addString(ParameterName.User, username);
-        msg.addString(ParameterName.Password, password.value);
+        if (password instanceof cryptmd5.Hash) {
+            msg.addString(ParameterName.Password, password.value);
+        } else {
+            msg.addString(ParameterName.Password, '');
+        }
         return msg;
     }
 

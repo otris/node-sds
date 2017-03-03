@@ -123,6 +123,24 @@ suite('SDS protocol tests', () => {
             }).catch(err => done(err));
         });
 
+        test('create ChangeUser message with empty password', done => {
+            const username: string = 'admin';
+
+            connection.send(Message.changeUser(username, '')).then(() => {
+                let packet = socket.out[0];
+                assert.equal(32, packet.length);
+                const bytes = [
+                    0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00, 0x1b, 0x07, 0x15, 0x00,
+                    0x00, 0x00, 0x06, 0x61, 0x64, 0x6d, 0x69, 0x6e,
+                    0x00, 0x07, 0x16, 0x00, 0x00, 0x00, 0x01, 0x00,
+                ];
+                assert.ok(packet.equals(Buffer.from(bytes)));
+
+                done();
+            }).catch(err => done(err));
+        });
+
         test('create ErrorMessage message', done => {
             const errorCode = 21;
 
