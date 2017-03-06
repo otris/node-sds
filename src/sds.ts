@@ -742,7 +742,7 @@ export class SDSConnection {
         });
     }
 
-    public changeUser(username: string, password: cryptmd5.Hash): Promise<UserId> {
+    public changeUser(username: string, password: cryptmd5.Hash | ''): Promise<UserId> {
         connectionLog.debug(`changeUser`);
         return new Promise<UserId>((resolve, reject) => {
             this.send(Message.changeUser(username, password)).then((response: Response) => {
