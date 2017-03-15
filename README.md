@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/otris/node-sds.svg?branch=master)](https://travis-ci.org/otris/node-sds)
+
 # node-sds
 A Node.js module to communicate with JANUS-generated applications. Written in
 TypeScript.
