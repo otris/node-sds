@@ -104,7 +104,7 @@ suite('SDS protocol tests', () => {
 
         test('create ChangeUser message', done => {
             const username: string = 'admin';
-            const password: Hash = function () { let h = new Hash(''); h.value = 'secret'; return h; } ();
+            const password: Hash = function () { let h = new Hash(''); h.value = 'secret'; return h; }();
 
             connection.send(Message.changeUser(username, password)).then(() => {
                 assert.equal(1, socket.out.length);

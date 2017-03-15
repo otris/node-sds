@@ -89,8 +89,6 @@ const FIRST_PARAM_INDEX = 13;
 const UTF8_BOM = "\xEF\xBB\xBF";
 const JANUS_CRYPTMD5_SALT: string = 'o3';
 
-
-
 type JanusPassword = '' | cryptmd5.Hash;
 
 
@@ -128,16 +126,12 @@ function term_utf8bom(str: string): Buffer {
     return term_utf8(UTF8_BOM + str);
 }
 
-
-
 function getJanusPassword(val: string): JanusPassword {
-    if (val.length > 0)
+    if (val.length > 0) {
         return cryptmd5.crypt_md5(val, JANUS_CRYPTMD5_SALT);
-    else
-        return '';
+    }
+    return "";
 };
-
-
 
 /**
  * Return a string where all bytes in given Buffer object are printed conveniently in hexadecimal notation. Only useful
