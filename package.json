@@ -12,7 +12,7 @@
   "publisher": "otris-software",
   "author": {
     "name": "otris-software",
-    "email": "heller@otris"
+    "email": "heller@otris.de"
   },
   "scripts": {
     "compile": "tsc -p ./",
