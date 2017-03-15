@@ -1,5 +1,1 @@
-# Ignore everything in this directory except this file
-*
-!src
-!.gitignore
-!.npmignore
+test/

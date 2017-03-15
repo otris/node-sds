@@ -1,5 +1,1 @@
-# Ignore everything in this directory except this file
-*
-!.gitignore
-!.npmignore
-!node-sds.d.ts
+*.d.ts
