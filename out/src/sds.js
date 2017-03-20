@@ -118,9 +118,9 @@ function getJanusPassword(val) {
     if (val.length > 0) {
         return cryptmd5.crypt_md5(val, JANUS_CRYPTMD5_SALT);
     }
-    return "";
+    return '';
 }
-;
+exports.getJanusPassword = getJanusPassword;
 /**
  * Return a string where all bytes in given Buffer object are printed conveniently in hexadecimal notation. Only useful
  * when logging or debugging.
