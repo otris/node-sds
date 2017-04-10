@@ -172,6 +172,7 @@ var ParameterName;
     ParameterName[ParameterName["Password"] = 22] = "Password";
     ParameterName[ParameterName["UserId"] = 40] = "UserId";
     ParameterName[ParameterName["Parameter"] = 48] = "Parameter";
+    ParameterName[ParameterName["ParameterPDO"] = 49] = "ParameterPDO";
     ParameterName[ParameterName["Principal"] = 80] = "Principal";
 })(ParameterName = exports.ParameterName || (exports.ParameterName = {}));
 var Type;
@@ -291,6 +292,7 @@ class Message {
         if (parameters.length) {
             msg.addStringList(ParameterName.Parameter, parameters);
         }
+        // todo add ParameterName.ParameterPDO
         return msg;
     }
     constructor() {
@@ -721,10 +723,10 @@ class SDSConnection {
         });
     }
     // Calls function on server: PDClass::callOperation
-    callClassOperation(classAndOp, parameters, debug = false) {
+    callClassOperation(classAndOp, parameters) {
         connectionLog.debug(`callClassOperation`);
         return new Promise((resolve, reject) => {
-            this.send(Message.callClassOperation(classAndOp, parameters), false, debug).then((response) => {
+            this.send(Message.callClassOperation(classAndOp, parameters), false).then((response) => {
                 const result = response.getInt32(ParameterName.ReturnValue);
                 if (result === 0) {
                     const returnedList = response.getStringList(ParameterName.Parameter);
@@ -757,7 +759,7 @@ class SDSConnection {
      * Send given message on the wire and immediately return a promise that is fulfilled whenever the response
      * comes in or the timeout is reached.
      */
-    send(msg, ignoreTimeout = false, debugServerMode) {
+    send(msg, ignoreTimeout = false) {
         // if send is called by disconnect, the server sends no response,
         // so call send without timeout to avoid the timeout-reject
         if (ignoreTimeout) {
@@ -770,9 +772,6 @@ class SDSConnection {
             // normal case: call send with timeout
             let timeoutId;
             let ms = this._timeout || 6000;
-            if (debugServerMode) {
-                ms = 0x7FFFFFFF;
-            }
             let response = this.waitForResponse();
             this.transport.send(msg);
             // clear timeouts if response finishes in time

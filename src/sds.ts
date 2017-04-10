@@ -188,6 +188,7 @@ export enum ParameterName {
     Password = 22,
     UserId = 40,
     Parameter = 48,
+    ParameterPDO = 49,
     Principal = 80,
 }
 
@@ -315,6 +316,7 @@ export class Message {
         if (parameters.length) {
             msg.addStringList(ParameterName.Parameter, parameters);
         }
+        // todo add ParameterName.ParameterPDO
         return msg;
     }
 
@@ -814,10 +816,10 @@ export class SDSConnection {
     }
 
     // Calls function on server: PDClass::callOperation
-    public callClassOperation(classAndOp: string, parameters: string[], debug = false): Promise<string[]> {
+    public callClassOperation(classAndOp: string, parameters: string[]): Promise<string[]> {
         connectionLog.debug(`callClassOperation`);
         return new Promise<string[]>((resolve, reject) => {
-            this.send(Message.callClassOperation(classAndOp, parameters), false, debug).then((response: Response) => {
+            this.send(Message.callClassOperation(classAndOp, parameters), false).then((response: Response) => {
                 const result = response.getInt32(ParameterName.ReturnValue);
                 if (result === 0) {
                     const returnedList = response.getStringList(ParameterName.Parameter);
@@ -854,7 +856,7 @@ export class SDSConnection {
      * Send given message on the wire and immediately return a promise that is fulfilled whenever the response
      * comes in or the timeout is reached.
      */
-    public send(msg: Message, ignoreTimeout = false, debugServerMode?: boolean): Promise<any> {
+    public send(msg: Message, ignoreTimeout = false): Promise<any> {
 
         // if send is called by disconnect, the server sends no response,
         // so call send without timeout to avoid the timeout-reject
@@ -869,10 +871,6 @@ export class SDSConnection {
 
             let timeoutId;
             let ms = this._timeout || 6000;
-
-            if (debugServerMode) {
-                ms = 0x7FFFFFFF;
-            }
 
             let response: Promise<Response> = this.waitForResponse();
             this.transport.send(msg);
