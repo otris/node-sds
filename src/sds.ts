@@ -821,14 +821,11 @@ export class SDSConnection {
         return new Promise<string[]>((resolve, reject) => {
             this.send(Message.callClassOperation(classAndOp, parameters), false).then((response: Response) => {
                 const result = response.getInt32(ParameterName.ReturnValue);
-                if (result === 0) {
+                if (result >= 0) {
                     const returnedList = response.getStringList(ParameterName.Parameter);
                     resolve(returnedList);
-                } else if (result < 0) {
-                    reject(new Error(`unable to call operation ${classAndOp}`));
                 } else {
-                    // TODO: check this return value
-                    resolve();
+                    reject(new Error(`operation ${classAndOp} failed on server`));
                 }
             }).catch((reason) => {
                 reject(reason);
