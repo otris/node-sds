@@ -733,7 +733,12 @@ class SDSConnection {
                     resolve(returnedList);
                 }
                 else {
-                    reject(new Error(`operation ${classAndOp} failed on server`));
+                    const returnedList = response.getStringList(ParameterName.Parameter);
+                    let errmsg = returnedList[0];
+                    if (!errmsg) {
+                        errmsg = `operation ${classAndOp} failed on server`;
+                    }
+                    reject(new Error(errmsg));
                 }
             }).catch((reason) => {
                 reject(reason);
