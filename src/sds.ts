@@ -309,14 +309,16 @@ export class Message {
      * @param {string} classAndOp: The class name and the operation name (e.g. "PortalScript.uploadScript")
      * @param {string[]} parameters: The parameters of the operation (e.g. ["scriptName", "scriptSource as string"])
      */
-    public static callClassOperation(classAndOp: string, parameters: string[]): Message {
+    public static callClassOperation(classAndOp: string, parameters: string[], parametersPDO?: string[]): Message {
         let msg = new Message();
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.CallClassOperation]);
         msg.addString(ParameterName.ClassAndOp, classAndOp);
         if (parameters.length) {
             msg.addStringList(ParameterName.Parameter, parameters);
         }
-        // todo add ParameterName.ParameterPDO
+        if (parametersPDO && parametersPDO.length) {
+            msg.addStringList(ParameterName.ParameterPDO, parametersPDO);
+        }
         return msg;
     }
 
@@ -816,10 +818,10 @@ export class SDSConnection {
     }
 
     // Calls function on server: PDClass::callOperation
-    public callClassOperation(classAndOp: string, parameters: string[]): Promise<string[]> {
+    public callClassOperation(classAndOp: string, parameters: string[], parametersPDO?: string[]): Promise<string[]> {
         connectionLog.debug(`callClassOperation`);
         return new Promise<string[]>((resolve, reject) => {
-            this.send(Message.callClassOperation(classAndOp, parameters), false).then((response: Response) => {
+            this.send(Message.callClassOperation(classAndOp, parameters, parametersPDO), false).then((response: Response) => {
                 const result = response.getInt32(ParameterName.ReturnValue);
                 if (result >= 0) {
                     const returnedList = response.getStringList(ParameterName.Parameter);
