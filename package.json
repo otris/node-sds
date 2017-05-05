@@ -17,7 +17,7 @@
   "scripts": {
     "compile": "tsc -p ./",
     "postinstall": "tsc -p ./",
-    "test": "tsc -p ./ && mocha --timeout 10000 -u tdd out/test/",
+    "test": "tsc -p ./ && tsc -p ./test && mocha --timeout 10000 -u tdd out/test/",
     "lint": "tslint src/*.ts test/*.ts"
   },
   "devDependencies": {
