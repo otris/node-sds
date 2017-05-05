@@ -829,7 +829,7 @@ export class SDSConnection {
                 } else {
                     const returnedList = response.getStringList(ParameterName.Parameter);
                     let errmsg = returnedList[0];
-                    if(!errmsg) {
+                    if (!errmsg) {
                         errmsg = `operation ${classAndOp} failed on server`;
                     }
                     reject(new Error(errmsg));

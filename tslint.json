@@ -26,6 +26,7 @@
     "only-arrow-functions": [
       false
     ],
-    "no-consecutive-blank-lines": [false]
+    "no-consecutive-blank-lines": [false],
+    "max-line-length": [false]
   }
 }
