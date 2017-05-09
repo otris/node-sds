@@ -21,13 +21,13 @@
     "lint": "tslint src/*.ts test/*.ts"
   },
   "devDependencies": {
-    "@types/node": "^7.0.4",
     "typescript": "^2.2.1",
     "mocha": "^2.4.5",
     "tslint": "^4.4.2",
     "@types/mocha": "^2.2.38"
   },
   "dependencies": {
-    "promised-timeout": "^0.3.2"
+    "promised-timeout": "^0.3.2",
+    "@types/node": "^7.0.4"
   }
 }
