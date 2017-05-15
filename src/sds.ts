@@ -823,7 +823,13 @@ export class SDSConnection {
         return new Promise<string[]>((resolve, reject) => {
             this.send(Message.callClassOperation(classAndOp, parameters, parametersPDO), false).then((response: Response) => {
                 const result = response.getInt32(ParameterName.ReturnValue);
-                if (result >= 0) {
+                if('PortalScript.runScript' === classAndOp) {
+                    // special case runScript
+                    // if the executed script has a return value, result is -1, that is a
+                    // bug in documents that cannot be fixed because of historical reasons
+                    const returnedList = response.getStringList(ParameterName.Parameter);
+                    resolve(returnedList);
+                } else if (result >= 0) {
                     const returnedList = response.getStringList(ParameterName.Parameter);
                     resolve(returnedList);
                 } else {
