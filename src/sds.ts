@@ -86,13 +86,9 @@ const ACK: Buffer = Buffer.from(term_utf8('valid'));
 const INVALID: Buffer = Buffer.from('invalid', 'ascii');
 const INITIAL_BUFFER_SIZE = 4 * 1024;
 const FIRST_PARAM_INDEX = 13;
-const UTF8_BOM = "\xEF\xBB\xBF";
 const JANUS_CRYPTMD5_SALT: string = 'o3';
 
-
-
 export type JanusPassword = '' | cryptmd5.Hash;
-
 
 /**
  * Return an array of all UTF-16 code units in given string plus a 0-terminus.
@@ -108,8 +104,6 @@ function term(str: string): number[] {
     return units;
 }
 
-
-
 /**
  * Return a buffer (the bytes) of an utf-8 string plus a 0-terminus.
  *
@@ -122,13 +116,6 @@ function term_utf8(str: string): Buffer {
     buffer[bytestrlen] = 0;
     return buffer;
 }
-
-// not used
-function term_utf8bom(str: string): Buffer {
-    return term_utf8(UTF8_BOM + str);
-}
-
-
 
 export function getJanusPassword(val: string): JanusPassword {
     if (val.length > 0) {
@@ -302,7 +289,6 @@ export class Message {
         return msg;
     }
 
-
     /**
      * Create a "callClassOperation" message.
      *
@@ -321,7 +307,6 @@ export class Message {
         }
         return msg;
     }
-
 
     private buffer: Buffer;
     private bufferedLength: number;
@@ -356,7 +341,6 @@ export class Message {
         this.add(stringSize);
         this.add(term_utf8(value));
     }
-
 
     /**
      * Add given string-list to this message.
@@ -404,7 +388,6 @@ export class Message {
             this.add(term_utf8(value));
         }
     }
-
 
     public addInt32(parameterName: ParameterName, value: number): void {
         this.add([Type.Int32, parameterName]);
@@ -637,7 +620,6 @@ export class SDSProtocolTransport extends EventEmitter {
         });
     }
 
-
     private scanParseAndEmit(chunk: Buffer): void {
         log.debug(printBytes('received', chunk));
 
@@ -665,7 +647,6 @@ export class SDSProtocolTransport extends EventEmitter {
                 this.messageSize = size;
             }
         }
-
 
         if (chunk.length < (this.messageSize - this.bufferedLength)) {
             // No end of message, still wait, don't emit anything
@@ -846,7 +827,6 @@ export class SDSConnection {
         });
     }
 
-
     public errorMessage(errorCode: number): Promise<string> {
         connectionLog.debug(`errorMessage`);
         return new Promise((resolve, reject) => {
@@ -858,9 +838,6 @@ export class SDSConnection {
             });
         });
     }
-
-
-
 
     /**
      * Send given message on the wire and immediately return a promise that is fulfilled whenever the response
