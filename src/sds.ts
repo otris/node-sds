@@ -531,7 +531,7 @@ export class Response {
         return returnList;
     }
 
-    public getBool(name: ParameterName): boolean {
+    public getBoolean(name: ParameterName): boolean {
         responseLog.debug(`getBool(${ParameterName[name]})`);
         const paramIndex = this.getParamIndex(name);
         const headType = this.buffer[paramIndex];
@@ -815,7 +815,7 @@ export class SDSConnection {
         connectionLog.debug(`runScriptOnServer`);
         return new Promise<string>((resolve, reject) => {
             this.send(Message.runScriptOnServer(sourceCode)).then((response: Response) => {
-                const success = response.getBool(ParameterName.ReturnValue);
+                const success = response.getBoolean(ParameterName.ReturnValue);
                 if (success) {
                     const returnedString = response.getString(ParameterName.Parameter);
                     resolve(returnedString);

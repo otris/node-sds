@@ -41,7 +41,7 @@ suite('SDS protocol tests', () => {
             ];
             const res = new Response(Buffer.from(bytes));
             assert.equal(35, res.length);
-            assert.equal(true, res.getBool(ParameterName.ReturnValue));
+            assert.equal(true, res.getBoolean(ParameterName.ReturnValue));
             assert.equal('Hello, world!', res.getString(ParameterName.Parameter));
         });
 
