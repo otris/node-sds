@@ -4,10 +4,10 @@
  * Something that behaves like a bloody Node socket.
  */
 export interface SocketLike {
-    on(event: string, handler: Function);
-    write(buffer: Buffer);
-    write(str: string, encoding: string);
-    end();
+    on(event: string, handler: Function): this;
+    write(buffer: Buffer): boolean;
+    write(str: string, encoding: string): boolean;
+    end(): void;
 }
 
 /**

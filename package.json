@@ -21,7 +21,7 @@
     "lint": "tslint src/*.ts test/*.ts"
   },
   "devDependencies": {
-    "typescript": "^2.2.1",
+    "typescript": "^2.3.3",
     "mocha": "^2.4.5",
     "tslint": "^4.4.2",
     "@types/mocha": "^2.2.38"

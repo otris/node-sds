@@ -60,9 +60,10 @@ suite('SDS protocol tests', () => {
         class MockSocket extends EventEmitter implements SocketLike {
             public out: Buffer[] = [];
 
-            public write(data: any, encoding?: string) {
+            public write(data: any, encoding?: string): boolean {
                 this.out.push(data);
                 this.emit('data', Buffer.from([]));
+                return true;
             }
             public end() { /* */ }
         }
@@ -167,6 +168,7 @@ suite('SDS protocol tests', () => {
                 socket.write = (data: any, encoding?: string) => {
                     socket.out.push(data);
                     socket.emit('data', Buffer.from('invalid', 'ascii'));
+                    return true;
                 };
 
                 connection.connect('Test').then(() => {
