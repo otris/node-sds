@@ -179,6 +179,7 @@ export enum ParameterName {
     Index = 13,
     User = 21,
     Password = 22,
+    Last = 25,
     UserId = 40,
     Parameter = 48,
     ParameterPDO = 49,
@@ -720,6 +721,19 @@ export class SDSProtocolTransport extends EventEmitter {
     }
 }
 
+export interface LogMessages {
+    /**
+     * A transient number that identifies the lines already retrieved.
+     * Returned in the response to this message. Set it to -1 initially.
+     */
+    lastSeen: number;
+
+    /**
+     * A bunch of log lines that the server logged since lastSeen.
+     */
+    lines: string[];
+}
+
 export type ClientId = number;
 
 export type UserId = number;
@@ -865,6 +879,27 @@ export class SDSConnection {
                 resolve(reason);
             }).catch((reason) => {
                 reject(reason);
+            });
+        });
+    }
+
+    public getLogMessages(lastSeen: number): Promise<LogMessages> {
+        connectionLog.debug(`getLogMessages`);
+        return new Promise((resolve, reject) => {
+            this.send(Message.getLogMessages(lastSeen)).then((response: Response) => {
+                let messages: LogMessages;
+                try {
+                    const content = response.getString(ParameterName.ReturnValue);
+                    const newLastSeen = response.getInt32(ParameterName.Last);
+                    const isUtf8Encoded = response.getBoolean(ParameterName.Conversion);
+                    assert.ok(isUtf8Encoded);
+                    let lines = content.length === 0 ? [] : content.trim().split(/\r?\n/g);
+                    messages = { lines, lastSeen: newLastSeen };
+                } catch (err) {
+                    reject(err.toString());
+                    return;
+                }
+                resolve(messages);
             });
         });
     }
