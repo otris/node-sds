@@ -158,6 +158,7 @@ export enum Operation {
     CallClassOperation = 101,
     COMOperation = 199,
     ChangePrincipal = 203,
+    SrvGui = 209,
 }
 
 export enum COMOperation {
@@ -165,18 +166,25 @@ export enum COMOperation {
     RunScriptOnServer = 42,
 }
 
+export enum SrvGuiOperation {
+    GetMessages = 10,
+}
+
 export enum ParameterName {
     ClientId = 1,
     ClassAndOp = 2,
     Value = 4,
     ReturnValue = 5,
+    Something = 8,
     Index = 13,
     User = 21,
     Password = 22,
     UserId = 40,
     Parameter = 48,
     ParameterPDO = 49,
+    Conversion = 51,
     Principal = 80,
+    Opcode = 88,
 }
 
 export enum Type {
@@ -237,6 +245,20 @@ export class Message {
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.COMOperation]);
         msg.addInt32(ParameterName.Index, COMOperation.ErrorMessage);
         msg.addInt32(ParameterName.Value, errorCode);
+        return msg;
+    }
+
+    /**
+     * Create a "GetLogMessages" message.
+     * @param {number} lastSeen A transient number that identifies the log lines already retrieved.
+     * Returned in the response to this message. Set it to -1 initially.
+     */
+    public static getLogMessages(lastSeen: number): Message {
+        let msg = new Message();
+        msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.SrvGui]);
+        msg.addInt32(ParameterName.Opcode, SrvGuiOperation.GetMessages);
+        msg.addInt32(ParameterName.Something, lastSeen);
+        msg.addBoolean(ParameterName.Conversion, true); // Convert to UTF-8
         return msg;
     }
 
@@ -394,6 +416,14 @@ export class Message {
         let bytes = Buffer.from([0, 0, 0, 0]);
         htonl(bytes, 0, value);
         this.add(bytes);
+    }
+
+    public addBoolean(parameterName: ParameterName, value: boolean): void {
+        let type = Type.Boolean;
+        if (!value) {
+            type |= Type.NullFlag;
+        }
+        this.add([type, parameterName]);
     }
 
     /**
