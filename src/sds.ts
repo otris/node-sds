@@ -99,7 +99,7 @@ export type JanusPassword = '' | cryptmd5.Hash;
  * @returns An array containing all code units plus a final '0'.
  */
 function term(str: string): number[] {
-    let units = str.split('').map(char => { return char.charCodeAt(0); });
+    const units = str.split('').map(char => char.charCodeAt(0));
     units.push(0);
     return units;
 }
@@ -111,8 +111,8 @@ function term(str: string): number[] {
  * @returns An array containing all code units plus a final '0'.
  */
 function term_utf8(str: string): Buffer {
-    let bytestrlen = Buffer.byteLength(str);
-    let buffer = Buffer.alloc(bytestrlen + 1, str, 'utf-8');
+    const bytestrlen = Buffer.byteLength(str);
+    const buffer = Buffer.alloc(bytestrlen + 1, str, 'utf-8');
     buffer[bytestrlen] = 0;
     return buffer;
 }
@@ -145,7 +145,7 @@ function printBytes(msg: string | undefined, buf: Buffer): string {
             str += `\n`;
         }
         column++;
-        let hex: string = buf[i].toString(16);
+        const hex: string = buf[i].toString(16);
         str += (hex.length === 1 ? '0x0' + hex : '0x' + hex) + ', ';
     }
     str += `\n]`;
@@ -196,7 +196,7 @@ export class Message {
      * Create an arbitrary message from the given buffer.
      */
     public static from(buf: Buffer): Message {
-        let msg = new Message();
+        const msg = new Message();
         msg.buffer = buf;
         msg.bufferedLength = buf.length;
         return msg;
@@ -208,7 +208,7 @@ export class Message {
      * This is the very first message send to the server.
      */
     public static hello(): Message {
-        let msg = Message.from(HELLO);
+        const msg = Message.from(HELLO);
         msg.pack = (): Buffer => {
             return msg.buffer;
         };
@@ -221,7 +221,7 @@ export class Message {
      * This message disconnects the client from the server in an orderly fashion.
      */
     public static disconnectClient(): Message {
-        let msg = new Message();
+        const msg = new Message();
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.DisconnectClient]);
         return msg;
     }
@@ -233,7 +233,7 @@ export class Message {
      * @param {number} errorCode The error code from a previous SDS call.
      */
     public static errorMessage(errorCode: number): Message {
-        let msg = new Message();
+        const msg = new Message();
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.COMOperation]);
         msg.addInt32(ParameterName.Index, COMOperation.ErrorMessage);
         msg.addInt32(ParameterName.Value, errorCode);
@@ -253,7 +253,7 @@ export class Message {
      * @param {Hash} password The user's password hashed with crypt_md5 or the empty string.
      */
     public static changeUser(username: string, password: cryptmd5.Hash | ''): Message {
-        let msg = new Message();
+        const msg = new Message();
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.ChangeUser]);
         msg.addString(ParameterName.User, username);
         if (password instanceof cryptmd5.Hash) {
@@ -270,7 +270,7 @@ export class Message {
      * @param {string} principalName: The client affiliation of the logged-in user.
      */
     public static changePrincipal(principalName: string): Message {
-        let msg = new Message();
+        const msg = new Message();
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.ChangePrincipal]);
         msg.addString(ParameterName.Principal, principalName);
         return msg;
@@ -282,7 +282,7 @@ export class Message {
      * @param {string} sourceCode The complete script that is to be executed on the server.
      */
     public static runScriptOnServer(sourceCode: string): Message {
-        let msg = new Message();
+        const msg = new Message();
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.COMOperation]);
         msg.addInt32(ParameterName.Index, COMOperation.RunScriptOnServer);
         msg.addString(ParameterName.Parameter, sourceCode);
@@ -296,7 +296,7 @@ export class Message {
      * @param {string[]} parameters: The parameters of the operation (e.g. ["scriptName", "scriptSource as string"])
      */
     public static callClassOperation(classAndOp: string, parameters: string[], parametersPDO?: string[]): Message {
-        let msg = new Message();
+        const msg = new Message();
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.CallClassOperation]);
         msg.addString(ParameterName.ClassAndOp, classAndOp);
         if (parameters.length) {
@@ -336,7 +336,7 @@ export class Message {
      */
     public addString(parameterName: ParameterName, value: string): void {
         this.add([Type.String, parameterName]);
-        let stringSize = Buffer.from([0, 0, 0, 0]);
+        const stringSize = Buffer.from([0, 0, 0, 0]);
         htonl(stringSize, 0, value.length + 1);
         this.add(stringSize);
         this.add(term_utf8(value));
@@ -362,7 +362,7 @@ export class Message {
         varSize += 32;
         // size of list-size (number)
         varSize += 32;
-        for (let value of values) {
+        for (const value of values) {
             // size of the current string-size (number)
             varSize += 32;
             // size of the current string
@@ -370,19 +370,19 @@ export class Message {
         }
 
         // add size (bytes) of the data-part
-        let dataSize = Buffer.from([0, 0, 0, 0]);
+        const dataSize = Buffer.from([0, 0, 0, 0]);
         htonl(dataSize, 0, varSize);
         this.add(dataSize);
 
         // add size of stringlist (number of elements)
-        let numElem = values.length;
-        let listSize = Buffer.from([0, 0, 0, 0]);
+        const numElem = values.length;
+        const listSize = Buffer.from([0, 0, 0, 0]);
         htonl(listSize, 0, numElem);
         this.add(listSize);
 
         // add size and value of all strings
-        for (let value of values) {
-            let stringSize = Buffer.from([0, 0, 0, 0]);
+        for (const value of values) {
+            const stringSize = Buffer.from([0, 0, 0, 0]);
             htonl(stringSize, 0, value.length + 1);
             this.add(stringSize);
             this.add(term_utf8(value));
@@ -391,7 +391,7 @@ export class Message {
 
     public addInt32(parameterName: ParameterName, value: number): void {
         this.add([Type.Int32, parameterName]);
-        let bytes = Buffer.from([0, 0, 0, 0]);
+        const bytes = Buffer.from([0, 0, 0, 0]);
         htonl(bytes, 0, value);
         this.add(bytes);
     }
@@ -405,7 +405,7 @@ export class Message {
         // flags, always 0 in our case, in network byte order
 
         const size = this.bufferedLength + 4;
-        let msg: Buffer = Buffer.alloc(size);
+        const msg: Buffer = Buffer.alloc(size);
         htonl(msg, 0, size);
         this.buffer.copy(msg, 4, 0, this.bufferedLength);
         return msg;
@@ -415,7 +415,7 @@ export class Message {
         const spaceLeft = this.buffer.length - this.bufferedLength;
         if (spaceLeft < chunk.length) {
             const newCapacity = Math.max(this.bufferedLength + chunk.length, 1.5 * this.buffer.length);
-            let newBuffer = Buffer.alloc(newCapacity);
+            const newBuffer = Buffer.alloc(newCapacity);
             this.buffer.copy(newBuffer);
             this.buffer = newBuffer;
         }
@@ -424,7 +424,7 @@ export class Message {
     }
 }
 
-let responseLog = Logger.create('Response');
+const responseLog = Logger.create('Response');
 
 export class Response {
     public readonly length: number;
@@ -485,7 +485,7 @@ export class Response {
         // const dataPartSize = ntohl(this.buffer, paramIndex + 2);
 
         const numElem = ntohl(this.buffer, paramIndex + 6);
-        let returnList: string[] = [];
+        const returnList: string[] = [];
         let listPtr = paramIndex + 10;
         let strLen = 0;
         let str = '';
@@ -580,7 +580,7 @@ export class Response {
     }
 }
 
-let log = Logger.create('SDSProtocolTransport');
+const log = Logger.create('SDSProtocolTransport');
 
 export class SDSProtocolTransport extends EventEmitter {
     private buffer: Buffer;
@@ -603,7 +603,7 @@ export class SDSProtocolTransport extends EventEmitter {
      * Send given message on TCP socket.
      */
     public send(msg: Message): void {
-        let packedMessage = msg.pack();
+        const packedMessage = msg.pack();
         log.debug(printBytes('sending', packedMessage));
         this.socket.write(packedMessage);
     }
@@ -624,7 +624,7 @@ export class SDSProtocolTransport extends EventEmitter {
         log.debug(printBytes('received', chunk));
 
         if (chunk.equals(ACK) || chunk.equals(INVALID)) {
-            let res = new Response(chunk);
+            const res = new Response(chunk);
             this.emit('response', res);
             return;
         }
@@ -636,7 +636,7 @@ export class SDSProtocolTransport extends EventEmitter {
 
             if (chunk.length === size) {
                 // Got whole message in one chunk. No need to copy anything
-                let res = new Response(chunk);
+                const res = new Response(chunk);
                 this.emit('response', res);
                 return;
             } else {
@@ -656,7 +656,7 @@ export class SDSProtocolTransport extends EventEmitter {
             this.appendToBuffer(chunk);
 
             // Buffer contains a complete response. Parse and emit
-            let res = new Response(this.buffer);
+            const res = new Response(this.buffer);
             this.emit('response', res);
 
             // reset variable
@@ -668,7 +668,7 @@ export class SDSProtocolTransport extends EventEmitter {
         {
             // received chunk longer than the message, so remainder is from next message
             const lastByteIdx = this.messageSize - this.bufferedLength - 1;
-            let test = chunk.slice(0, lastByteIdx);
+            const test = chunk.slice(0, lastByteIdx);
             this.appendToBuffer(chunk.slice(0, lastByteIdx));
             if ((lastByteIdx + 1) < chunk.length) {
                 // Continue with remainder
@@ -681,7 +681,7 @@ export class SDSProtocolTransport extends EventEmitter {
         const spaceLeft = this.buffer.length - this.bufferedLength;
         if (spaceLeft < chunk.length) {
             const newCapacity = Math.max(this.bufferedLength + chunk.length, 1.5 * this.buffer.length);
-            let newBuffer = Buffer.alloc(newCapacity);
+            const newBuffer = Buffer.alloc(newCapacity);
             this.buffer.copy(newBuffer);
             this.buffer = newBuffer;
         }
@@ -694,7 +694,7 @@ export type ClientId = number;
 
 export type UserId = number;
 
-let connectionLog = Logger.create('SDSConnection');
+const connectionLog = Logger.create('SDSConnection');
 
 export class SDSConnection {
     private _clientId: ClientId | undefined;
@@ -727,7 +727,7 @@ export class SDSConnection {
             }
 
             // Hello ack'ed, no SSL, send intro
-            let msg = new Message();
+            const msg = new Message();
             msg.add([0, 0, 0, 0, 0, 0, 0, 0, 0]);
             msg.add(Buffer.from(term_utf8(`${clientName} on ${os.platform()}`)));
             return this.send(msg);
@@ -857,9 +857,9 @@ export class SDSConnection {
             // normal case: call send with timeout
 
             let timeoutId;
-            let ms = this._timeout || 6000;
+            const ms = this._timeout || 6000;
 
-            let response: Promise<Response> = this.waitForResponse();
+            const response: Promise<Response> = this.waitForResponse();
             this.transport.send(msg);
 
             // clear timeouts if response finishes in time

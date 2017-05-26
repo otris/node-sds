@@ -44,7 +44,7 @@ import * as crypto from 'crypto';
 
 function cryptTo64(s: string, v: number, n: number): string {
     let retStr: string = '';
-    let itoa64: string = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    const itoa64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
     while (--n >= 0) {
         retStr += itoa64.charAt(v & 0x3f);
         v >>= 6;
@@ -73,12 +73,12 @@ export class Hash {
  */
 export function crypt_md5(key: string, salt: string): Hash {
 
-    let MD5_SIZE: number = 16;
+    const MD5_SIZE = 16;
     // The context for hashing.
     let ctx: any; // TODO: this should be really crypto.Hash
     let ctx1: any; // TODO: this should be really crypto.Hash
     // The magic (or id) that identify the process
-    let magic: string = '$1$';
+    const magic = '$1$';
 
     // Init the first context ctx with the required hash-algorithm.
     ctx = crypto.createHash('md5');

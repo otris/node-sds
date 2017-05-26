@@ -4,7 +4,8 @@
  * Something that behaves like a bloody Node socket.
  */
 export interface SocketLike {
-    on(event: string, handler: Function): this;
+    // tslint:disable-next-line:ban-types
+    on(event: string, listener: Function): this;
     write(buffer: Buffer): boolean;
     write(str: string, encoding: string): boolean;
     end(): void;
@@ -22,7 +23,7 @@ export function htonl(b: Buffer, i: number, val: number): void {
     b[i + 1] = (0xff & (val >> 16));
     b[i + 2] = (0xff & (val >>  8));
     b[i + 3] = (0xff & (val));
-};
+}
 
 /**
  * Convert a 32-bit quantity (long integer) from network byte order to host byte order (big- to little-endian).
@@ -35,4 +36,4 @@ export function ntohl(b: Buffer, i: number): number {
            ((0xff & b[i + 1]) << 16) |
            ((0xff & b[i + 2]) <<  8) |
            ((0xff & b[i + 3]));
-};
+}

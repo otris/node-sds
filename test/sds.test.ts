@@ -83,7 +83,7 @@ suite('SDS protocol tests', () => {
         test('create Hello message', done => {
             connection.send(Message.hello()).then(() => {
                 assert.equal(1, socket.out.length);
-                let packet = socket.out[0];
+                const packet = socket.out[0];
                 assert.equal(8, packet.length);
                 done();
             }).catch(err => done(err));
@@ -92,7 +92,7 @@ suite('SDS protocol tests', () => {
         test('create DisconnectClient message', done => {
             connection.send(Message.disconnectClient()).then(() => {
                 assert.equal(1, socket.out.length);
-                let packet = socket.out[0];
+                const packet = socket.out[0];
                 assert.equal(13, packet.length);
                 const bytes = [
                     0x00, 0x00, 0x00, 0x0d, 0x00, 0x00, 0x00, 0x00,
@@ -105,11 +105,11 @@ suite('SDS protocol tests', () => {
 
         test('create ChangeUser message', done => {
             const username: string = 'admin';
-            const password: Hash = function () { let h = new Hash(''); h.value = 'secret'; return h; }();
+            const password: Hash = function() { const h = new Hash(''); h.value = 'secret'; return h; }();
 
             connection.send(Message.changeUser(username, password)).then(() => {
                 assert.equal(1, socket.out.length);
-                let packet = socket.out[0];
+                const packet = socket.out[0];
                 assert.equal(38, packet.length);
                 const bytes = [
                     0x00, 0x00, 0x00, 0x26, 0x00, 0x00, 0x00, 0x00,
@@ -128,7 +128,7 @@ suite('SDS protocol tests', () => {
             const username: string = 'admin';
 
             connection.send(Message.changeUser(username, '')).then(() => {
-                let packet = socket.out[0];
+                const packet = socket.out[0];
                 assert.equal(32, packet.length);
                 const bytes = [
                     0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00,

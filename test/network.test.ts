@@ -10,7 +10,7 @@ suite('byte order tests', () => {
     });
 
     test('host to network byte order of 0', () => {
-        let buf = Buffer.from([0, 0, 0, 0]);
+        const buf = Buffer.from([0, 0, 0, 0]);
         htonl(buf, 0, 0);
         assert.equal(0, buf[0]);
         assert.equal(0, buf[1]);
@@ -21,7 +21,7 @@ suite('byte order tests', () => {
     test('byte order round trip', () => {
         // 1729: [ c1 06 00 00 ] in host byte order (little-endian)
         //       [ 00 00 06 c1 ] in network byte order (big-endian)
-        let bytes = Buffer.from([0, 0, 0, 0]);
+        const bytes = Buffer.from([0, 0, 0, 0]);
         htonl(bytes, 0, 1729);
         assert.equal(0, bytes[0]);
         assert.equal(0, bytes[1]);
