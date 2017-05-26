@@ -27,7 +27,7 @@
     "@types/mocha": "^2.2.38"
   },
   "dependencies": {
-    "promised-timeout": "^0.3.2",
+    "promised-timeout": "^0.3.3",
     "@types/node": "^7.0.4"
   }
 }
