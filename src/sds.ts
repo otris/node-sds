@@ -856,7 +856,6 @@ export class SDSConnection {
 
             // normal case: call send with timeout
 
-            let timeoutId;
             const ms = this._timeout || 6000;
 
             const response: Promise<Response> = this.waitForResponse();
