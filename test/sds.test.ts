@@ -41,7 +41,7 @@ suite('SDS protocol tests', () => {
             ];
             const res = new Response(Buffer.from(bytes));
             assert.equal(35, res.length);
-            assert.equal(true, res.getBool(ParameterName.ReturnValue));
+            assert.equal(true, res.getBoolean(ParameterName.ReturnValue));
             assert.equal('Hello, world!', res.getString(ParameterName.Parameter));
         });
 
@@ -158,6 +158,25 @@ suite('SDS protocol tests', () => {
                 assert.ok(packet.equals(Buffer.from(bytes)));
                 done();
 
+            }).catch(err => done(err));
+        });
+
+        test('create GetLogMessages message', done => {
+            const lastSeen = -1;
+
+            connection.send(Message.getLogMessages(lastSeen)).then(() => {
+                assert.equal(1, socket.out.length);
+                let packet = socket.out[0];
+                assert.equal(27, packet.length);
+                const bytes = [
+                    0x00, 0x00, 0x00, 0x1b, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00, 0xd1, 0x03, 0x58, 0x00,
+                    0x00, 0x00, 0x0a, 0x03, 0x08, 0xff, 0xff, 0xff,
+                    0xff, 0x02, 0x33,
+                ];
+                assert.ok(packet.equals(Buffer.from(bytes)));
+
+                done();
             }).catch(err => done(err));
         });
 
