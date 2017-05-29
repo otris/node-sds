@@ -166,7 +166,7 @@ suite('SDS protocol tests', () => {
 
             connection.send(Message.getLogMessages(lastSeen)).then(() => {
                 assert.equal(1, socket.out.length);
-                let packet = socket.out[0];
+                const packet = socket.out[0];
                 assert.equal(27, packet.length);
                 const bytes = [
                     0x00, 0x00, 0x00, 0x1b, 0x00, 0x00, 0x00, 0x00,

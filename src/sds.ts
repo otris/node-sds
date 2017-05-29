@@ -255,7 +255,7 @@ export class Message {
      * Returned in the response to this message. Set it to -1 initially.
      */
     public static getLogMessages(lastSeen: number): Message {
-        let msg = new Message();
+        const msg = new Message();
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.SrvGui]);
         msg.addInt32(ParameterName.Opcode, SrvGuiOperation.GetMessages);
         msg.addInt32(ParameterName.Something, lastSeen);
@@ -893,7 +893,7 @@ export class SDSConnection {
                     const newLastSeen = response.getInt32(ParameterName.Last);
                     const isUtf8Encoded = response.getBoolean(ParameterName.Conversion);
                     assert.ok(isUtf8Encoded);
-                    let lines = content.length === 0 ? [] : content.trim().split(/\r?\n/g);
+                    const lines = content.length === 0 ? [] : content.trim().split(/\r?\n/g);
                     messages = { lines, lastSeen: newLastSeen };
                 } catch (err) {
                     reject(err.toString());
