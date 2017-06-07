@@ -196,7 +196,9 @@ export enum ParameterName {
     ParameterPDO = 49,
     Conversion = 51,
     Principal = 80,
+    Filename = 87,
     Opcode = 88,
+    Flag = 119,
 }
 
 export enum Type {
@@ -314,12 +316,18 @@ export class Message {
      * Create a "RunScriptOnServer" message.
      *
      * @param {string} sourceCode The complete script that is to be executed on the server.
+     * @param {string} scriptUrl An (optional) string that is used to identify the script, e.g., the filename or a URL.
      */
-    public static runScriptOnServer(sourceCode: string): Message {
+    public static runScriptOnServer(sourceCode: string, scriptUrl?: string): Message {
         const msg = new Message();
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.COMOperation]);
         msg.addInt32(ParameterName.Index, COMOperation.RunScriptOnServer);
         msg.addString(ParameterName.Parameter, sourceCode);
+        msg.addStringList(ParameterName.Something, []); // script parameters - always none for us
+        msg.addBoolean(ParameterName.Flag, false); // consoleAndTimer - always false for us
+        if (scriptUrl) {
+            msg.addString(ParameterName.Filename, scriptUrl);
+        }
         return msg;
     }
 
@@ -836,10 +844,10 @@ export class SDSConnection {
         });
     }
 
-    public runScriptOnServer(sourceCode: string): Promise<string> {
+    public runScriptOnServer(sourceCode: string, scriptUrl?: string): Promise<string> {
         connectionLog.debug(`runScriptOnServer`);
         return new Promise<string>((resolve, reject) => {
-            this.send(Message.runScriptOnServer(sourceCode)).then((response: Response) => {
+            this.send(Message.runScriptOnServer(sourceCode, scriptUrl)).then((response: Response) => {
                 const success = response.getBoolean(ParameterName.ReturnValue);
                 if (success) {
                     const returnedString = response.getString(ParameterName.Parameter);
