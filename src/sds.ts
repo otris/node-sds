@@ -111,9 +111,9 @@ function term(str: string): number[] {
  * @returns An array containing all code units plus a final '0'.
  */
 function term_utf8(str: string): Buffer {
-    const bytestrlen = Buffer.byteLength(str);
-    const buffer = Buffer.alloc(bytestrlen + 1, str, 'utf-8');
-    buffer[bytestrlen] = 0;
+    const byteLength = Buffer.byteLength(str);
+    const buffer = Buffer.alloc(byteLength + 1, str, 'utf-8');
+    buffer[byteLength] = 0;
     return buffer;
 }
 
@@ -397,7 +397,7 @@ export class Message {
         htonl(dataSize, 0, varSize);
         this.add(dataSize);
 
-        // add size of stringlist (number of elements)
+        // add size of StringList (number of elements)
         const numElem = values.length;
         const listSize = Buffer.from([0, 0, 0, 0]);
         htonl(listSize, 0, numElem);
@@ -505,8 +505,8 @@ export class Response {
         // paramIndex[0]: type
         // paramIndex[1]: name-code
         // ----- data-part of parameter -----
-        // paramIndex[2..5]: size of data-part of the parameter (stringlist)
-        // paramIndex[6..9]: size of the stringlist (number of elements)
+        // paramIndex[2..5]: size of data-part of the parameter (StringList)
+        // paramIndex[6..9]: size of the StringList (number of elements)
         // paramIndex[10..13]: strLen: size of the first string (bytes)
         // paramIndex[14...]: first string
         // paramIndex[14 + strLen ...]: size of second string
@@ -859,11 +859,11 @@ export class SDSConnection {
                     resolve(returnedList);
                 } else {
                     const returnedList = response.getStringList(ParameterName.Parameter);
-                    let errmsg = returnedList[0];
-                    if (!errmsg) {
-                        errmsg = `operation ${classAndOp} failed on server`;
+                    let errorMessage = returnedList[0];
+                    if (!errorMessage) {
+                        errorMessage = `operation ${classAndOp} failed on server`;
                     }
-                    reject(new Error(errmsg));
+                    reject(new Error(errorMessage));
                 }
             }).catch((reason) => {
                 reject(reason);
