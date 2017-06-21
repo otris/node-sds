@@ -9,10 +9,10 @@ TypeScript.
 ## Install
 Easy. In your project, run
 ```bash
-$ npm install --save git+https://git@github.com/otris/node-sds.git
+$ npm install --save git+https://git@github.com/otris/node-sds.git#1.0.0
 ```
 Note that there is no npm package. You should always just use the latest
-development version (HEAD in master branch).
+release tag if in doubt.
 
 ## Dependencies
 Except [mocha](https://mochajs.org/) for testing and
