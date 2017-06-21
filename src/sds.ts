@@ -846,7 +846,7 @@ export class SDSConnection {
     public callClassOperation(classAndOp: string, parameters: string[], parametersPDO?: string[]): Promise<string[]> {
         connectionLog.debug(`callClassOperation`);
         return new Promise<string[]>((resolve, reject) => {
-            this.send(Message.callClassOperation(classAndOp, parameters, parametersPDO), false).then((response: Response) => {
+            this.send(Message.callClassOperation(classAndOp, parameters, parametersPDO)).then((response: Response) => {
                 const result = response.getInt32(ParameterName.ReturnValue);
                 if ('PortalScript.runScript' === classAndOp) {
                     // special case runScript
@@ -905,35 +905,24 @@ export class SDSConnection {
     }
 
     /**
-     * Send given message on the wire and immediately return a promise that is fulfilled whenever the response
-     * comes in or the timeout is reached.
+     * Send given message.
+     *
+     * Send given message on the wire and immediately return a promise that is
+     * fulfilled whenever the response comes in or the timeout is reached.
+     *
+     * @param {Message} msg The message that should be send.
+     * @returns {Promise<Response>} A promise that will be resolved with the
+     * corresponding response from the server.
      */
-    public send(msg: Message, ignoreTimeout = false): Promise<any> {
-
-        // if send is called by disconnect, the server sends no response,
-        // so call send without timeout to avoid the timeout-reject
-        if (ignoreTimeout) {
-            this.transport.send(msg);
-            return new Promise<void>((resolve) => {
-                resolve();
-            });
-        } else {
-
-            // normal case: call send with timeout
-
-            const ms = this._timeout || 6000;
-
-            const response: Promise<Response> = this.waitForResponse();
-            this.transport.send(msg);
-
-            // clear timeouts if response finishes in time
-            // see motivation of npm promised-timeout
-            return timeout({
-                promise: response,
-                time: ms,
-                error: new Error('Request timed out'),
-            });
-        }
+    public send(msg: Message): Promise<Response> {
+        const ms = this._timeout || 6000;
+        const response: Promise<Response> = this.waitForResponse();
+        this.transport.send(msg);
+        return timeout({
+            promise: response,
+            time: ms,
+            error: new Error('Request timed out'),
+        });
     }
 
     /**
@@ -956,7 +945,7 @@ export class SDSConnection {
      */
     public disconnect(): Promise<void> {
         connectionLog.debug(`disconnect`);
-        return this.send(Message.disconnectClient(), true).then(() => {
+        return this.send(Message.disconnectClient()).then(() => {
             return this.transport.disconnect();
         });
     }
