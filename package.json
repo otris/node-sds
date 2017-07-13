@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "promised-timeout": "^0.3.3",
+    "node-file-log": "git+https://github.com/otris/node-file-log.git#1.0.0",
     "@types/node": "^7.0.4"
   }
 }
