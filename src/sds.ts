@@ -75,10 +75,10 @@
 import * as assert from 'assert';
 import { EventEmitter } from 'events';
 import { connect } from 'net';
+import { Logger } from 'node-file-log';
 import * as os from 'os';
 import { timeout } from 'promised-timeout';
 import * as cryptmd5 from './cryptmd5';
-import { Logger } from './log';
 import { htonl, ntohl, SocketLike } from './network';
 
 const HELLO: Buffer = Buffer.from('GGCH$1$$', 'ascii');

@@ -23,11 +23,12 @@
   "devDependencies": {
     "typescript": "^2.3.3",
     "mocha": "^2.4.5",
-    "tslint": "^5.3.2",
+    "tslint": "5.3.2",
     "@types/mocha": "^2.2.38"
   },
   "dependencies": {
     "promised-timeout": "^0.3.3",
+    "node-file-log": "git+https://github.com/otris/node-file-log.git#1.0.0",
     "@types/node": "^7.0.4"
   }
 }
