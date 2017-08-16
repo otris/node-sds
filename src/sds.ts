@@ -117,6 +117,17 @@ function term_utf8(str: string): Buffer {
     return buffer;
 }
 
+/**
+ * Return the number of bytes of an utf-8 string plus a 0-terminus.
+ *
+ * @param {string} str An arbitrary string
+ * @returns Number of all code units plus a final '0'.
+ */
+function size_term_utf8(str: string): number {
+    const byteLength = Buffer.byteLength(str);
+    return byteLength + 1;
+}
+
 export function getJanusPassword(val: string): JanusPassword {
     if (val.length > 0) {
         return cryptmd5.crypt_md5(val, JANUS_CRYPTMD5_SALT);
@@ -360,7 +371,7 @@ export class Message {
     public addString(parameterName: ParameterName, value: string): void {
         this.add([Type.String, parameterName]);
         const stringSize = Buffer.from([0, 0, 0, 0]);
-        htonl(stringSize, 0, value.length + 1);
+        htonl(stringSize, 0, size_term_utf8(value));
         this.add(stringSize);
         this.add(term_utf8(value));
     }
@@ -389,7 +400,7 @@ export class Message {
             // size of the current string-size (number)
             varSize += 32;
             // size of the current string
-            varSize += value.length;
+            varSize += size_term_utf8(value);
         }
 
         // add size (bytes) of the data-part
@@ -406,7 +417,7 @@ export class Message {
         // add size and value of all strings
         for (const value of values) {
             const stringSize = Buffer.from([0, 0, 0, 0]);
-            htonl(stringSize, 0, value.length + 1);
+            htonl(stringSize, 0, size_term_utf8(value));
             this.add(stringSize);
             this.add(term_utf8(value));
         }
