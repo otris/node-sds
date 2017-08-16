@@ -918,7 +918,7 @@ export class SDSConnection {
     /**
      * Send given message on the wire and immediately return a promise that is fulfilled whenever the response
      * comes in or the timeout is reached.
-     * 
+     *
      * @param ignoreTimeout important to avoid timeout-reject in disconnect!
      */
     public send(msg: Message, ignoreTimeout = false): Promise<any> {
