@@ -857,7 +857,7 @@ export class SDSConnection {
     public callClassOperation(classAndOp: string, parameters: string[], parametersPDO?: string[]): Promise<string[]> {
         connectionLog.debug(`callClassOperation`);
         return new Promise<string[]>((resolve, reject) => {
-            this.send(Message.callClassOperation(classAndOp, parameters, parametersPDO), false).then((response: Response) => {
+            this.send(Message.callClassOperation(classAndOp, parameters, parametersPDO)).then((response: Response) => {
                 const result = response.getInt32(ParameterName.ReturnValue);
                 if ('PortalScript.runScript' === classAndOp) {
                     // special case runScript
