@@ -919,13 +919,14 @@ export class SDSConnection {
      * Send given message on the wire and immediately return a promise that is fulfilled whenever the response
      * comes in or the timeout is reached.
      *
-     * @param ignoreTimeout important to avoid timeout-reject in disconnect!
+     * @param waitForResponse when send() is called from disconnect(), we shouldn't wait for a response because
+     *                        we won't get one. When setting this variable to false, we can avoid the timeout error.
      */
-    public send(msg: Message, ignoreTimeout = false): Promise<any> {
+    public send(msg: Message, waitForResponse = true): Promise<any> {
 
-        // if send is called by disconnect, the server sends no response,
-        // so call send without timeout to avoid the timeout-reject
-        if (ignoreTimeout) {
+        // if send is called by disconnect(), the server sends no response,
+        // so call send without waiting for response to avoid the timeout error
+        if (!waitForResponse) {
             this.transport.send(msg);
             return new Promise<void>((resolve) => {
                 resolve();
@@ -969,7 +970,7 @@ export class SDSConnection {
      */
     public disconnect(): Promise<void> {
         connectionLog.debug(`disconnect`);
-        return this.send(Message.disconnectClient(), true).then(() => {
+        return this.send(Message.disconnectClient(), false).then(() => {
             return this.transport.disconnect();
         });
     }
