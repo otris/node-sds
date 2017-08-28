@@ -323,8 +323,6 @@ export class Message {
         msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.COMOperation]);
         msg.addInt32(ParameterName.Index, COMOperation.RunScriptOnServer);
         msg.addString(ParameterName.Parameter, sourceCode);
-        msg.addStringList(ParameterName.Something, []); // script parameters - always none for us
-        msg.addBoolean(ParameterName.Flag, false); // consoleAndTimer - always false for us
         if (scriptUrl) {
             msg.addString(ParameterName.Filename, scriptUrl);
         }
