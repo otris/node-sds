@@ -917,6 +917,8 @@ export class SDSConnection {
                     return;
                 }
                 resolve(messages);
+            }).catch((reason) => {
+                reject(reason);
             });
         });
     }
