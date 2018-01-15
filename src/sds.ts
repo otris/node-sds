@@ -75,7 +75,6 @@
 import * as assert from 'assert';
 import { EventEmitter } from 'events';
 import { connect } from 'net';
-import { Logger } from 'node-file-log';
 import * as os from 'os';
 import { timeout } from 'promised-timeout';
 import * as cryptmd5 from './cryptmd5';
@@ -472,15 +471,13 @@ export class Message {
     }
 }
 
-const responseLog = Logger.create('Response');
-
 export class Response {
     public readonly length: number;
 
     constructor(private buffer: Buffer) {
         this.length = ntohl(buffer, 0);
         if (this.length !== this.buffer.length) {
-            responseLog.warn(`response length is ${this.length} but received chunk with length ${this.buffer.length}`);
+            // responseLog.warn(`response length is ${this.length} but received chunk with length ${this.buffer.length}`);
         }
     }
 
@@ -489,7 +486,7 @@ export class Response {
     }
 
     public getInt32(name: ParameterName): number {
-        responseLog.debug(`getInt32(${ParameterName[name]})`);
+        // responseLog.debug(`getInt32(${ParameterName[name]})`);
         const paramIndex = this.getParamIndex(name);
         const headType = this.buffer[paramIndex];
         assert.ok((headType & ~Type.NullFlag) === Type.Int32);
@@ -497,7 +494,7 @@ export class Response {
     }
 
     public getString(name: ParameterName): string {
-        responseLog.debug(`getString(${ParameterName[name]})`);
+        // responseLog.debug(`getString(${ParameterName[name]})`);
         const paramIndex = this.getParamIndex(name);
         const headType = this.buffer[paramIndex];
         assert.ok((headType & ~Type.NullFlag) === Type.String);
@@ -510,7 +507,7 @@ export class Response {
     }
 
     public getStringList(name: ParameterName): string[] {
-        responseLog.debug(`getString(${ParameterName[name]})`);
+        // responseLog.debug(`getString(${ParameterName[name]})`);
         const paramIndex = this.getParamIndex(name);
         const headType = this.buffer[paramIndex];
         assert.ok((headType & ~Type.NullFlag) === Type.StringList);
@@ -550,7 +547,7 @@ export class Response {
     }
 
     public getBoolean(name: ParameterName): boolean {
-        responseLog.debug(`getBool(${ParameterName[name]})`);
+        // responseLog.debug(`getBool(${ParameterName[name]})`);
         const paramIndex = this.getParamIndex(name);
         const headType = this.buffer[paramIndex];
         assert.ok((headType & ~Type.NullFlag) === Type.Boolean);
@@ -628,8 +625,6 @@ export class Response {
     }
 }
 
-const log = Logger.create('SDSProtocolTransport');
-
 export class SDSProtocolTransport extends EventEmitter {
     private buffer: Buffer;
     private bufferedLength: number;
@@ -652,7 +647,7 @@ export class SDSProtocolTransport extends EventEmitter {
      */
     public send(msg: Message): void {
         const packedMessage = msg.pack();
-        log.debug(printBytes('sending', packedMessage));
+        // log.debug(printBytes('sending', packedMessage));
         this.socket.write(packedMessage);
     }
 
@@ -669,7 +664,7 @@ export class SDSProtocolTransport extends EventEmitter {
     }
 
     private scanParseAndEmit(chunk: Buffer): void {
-        log.debug(printBytes('received', chunk));
+        // log.debug(printBytes('received', chunk));
 
         if (chunk.equals(ACK) || chunk.equals(INVALID)) {
             const res = new Response(chunk);
@@ -755,8 +750,6 @@ export type ClientId = number;
 
 export type UserId = number;
 
-const connectionLog = Logger.create('SDSConnection');
-
 export class SDSConnection {
     private _clientId: ClientId | undefined;
     private _timeout: number;
@@ -776,7 +769,7 @@ export class SDSConnection {
      *
      */
     public connect(clientName: string): Promise<void> {
-        connectionLog.debug(`connect`);
+        // connectionLog.debug(`connect`);
         return this.send(Message.hello()).then((response: Response) => {
 
             if (!response.equals(ACK)) {
@@ -801,11 +794,11 @@ export class SDSConnection {
     }
 
     public changeUser(username: string, password: cryptmd5.Hash | ''): Promise<UserId> {
-        connectionLog.debug(`changeUser`);
+        // connectionLog.debug(`changeUser`);
         return new Promise<UserId>((resolve, reject) => {
             this.send(Message.changeUser(username, password)).then((response: Response) => {
                 const result = response.getInt32(ParameterName.ReturnValue);
-                log.debug(`changeUser returned: ${result}`);
+                // log.debug(`changeUser returned: ${result}`);
                 if (result > 0) {
                     return this.errorMessage(result).then(localizedReason => {
                         let reason: string | undefined;
@@ -815,9 +808,9 @@ export class SDSConnection {
                         reject(reason === undefined ? new Error(`login failed`) : new Error(reason));
                     });
                 } else {
-                    log.debug(`getting user ID from response`);
+                    // log.debug(`getting user ID from response`);
                     const userId = response.getInt32(ParameterName.UserId);
-                    log.debug(`response contained user ID: ${userId}`);
+                    // log.debug(`response contained user ID: ${userId}`);
                     resolve(userId);
                 }
             }).catch((reason) => {
@@ -827,7 +820,7 @@ export class SDSConnection {
     }
 
     public changePrincipal(principalName: string): Promise<void> {
-        connectionLog.debug(`changePrincipal`);
+        // connectionLog.debug(`changePrincipal`);
         return new Promise<void>((resolve, reject) => {
             this.send(Message.changePrincipal(principalName)).then((response: Response) => {
                 const result = response.getInt32(ParameterName.ReturnValue);
@@ -843,7 +836,7 @@ export class SDSConnection {
     }
 
     public runScriptOnServer(sourceCode: string, scriptUrl?: string): Promise<string> {
-        connectionLog.debug(`runScriptOnServer`);
+        // connectionLog.debug(`runScriptOnServer`);
         return new Promise<string>((resolve, reject) => {
             this.send(Message.runScriptOnServer(sourceCode, scriptUrl)).then((response: Response) => {
                 const success = response.getBoolean(ParameterName.ReturnValue);
@@ -861,7 +854,7 @@ export class SDSConnection {
 
     // Calls function on server: PDClass::callOperation
     public callClassOperation(classAndOp: string, parameters: string[], parametersPDO?: string[]): Promise<string[]> {
-        connectionLog.debug(`callClassOperation`);
+        // connectionLog.debug(`callClassOperation`);
         return new Promise<string[]>((resolve, reject) => {
             this.send(Message.callClassOperation(classAndOp, parameters, parametersPDO)).then((response: Response) => {
                 const result = response.getInt32(ParameterName.ReturnValue);
@@ -889,7 +882,7 @@ export class SDSConnection {
     }
 
     public errorMessage(errorCode: number): Promise<string> {
-        connectionLog.debug(`errorMessage`);
+        // connectionLog.debug(`errorMessage`);
         return new Promise((resolve, reject) => {
             this.send(Message.errorMessage(errorCode)).then((response: Response) => {
                 const reason: string = response.getString(ParameterName.ReturnValue);
@@ -901,7 +894,7 @@ export class SDSConnection {
     }
 
     public getLogMessages(lastSeen: number): Promise<LogMessages> {
-        connectionLog.debug(`getLogMessages`);
+        // connectionLog.debug(`getLogMessages`);
         return new Promise((resolve, reject) => {
             this.send(Message.getLogMessages(lastSeen)).then((response: Response) => {
                 let messages: LogMessages;
@@ -977,7 +970,7 @@ export class SDSConnection {
      * Disconnect from the server.
      */
     public disconnect(): Promise<void> {
-        connectionLog.debug(`disconnect`);
+        // connectionLog.debug(`disconnect`);
         return this.send(Message.disconnectClient(), false).then(() => {
             return this.transport.disconnect();
         });
