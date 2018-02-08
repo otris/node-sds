@@ -84,6 +84,10 @@ const HELLO: Buffer = Buffer.from('GGCH$1$$', 'ascii');
 const ACK: Buffer = Buffer.from(term_utf8('valid'));
 const INVALID: Buffer = Buffer.from('invalid', 'ascii');
 const INITIAL_BUFFER_SIZE = 4 * 1024;
+const MESSAGE_HEAD_LENGTH = 13;
+const OID_LOW_INDEX = 4;
+const OID_HIGH_INDEX = 8;
+const OPERATION_INDEX = 12;
 const FIRST_PARAM_INDEX = 13;
 const JANUS_CRYPTMD5_SALT: string = 'o3';
 
@@ -165,6 +169,7 @@ function printBytes(msg: string | undefined, buf: Buffer): string {
 export enum Operation {
     ChangeUser = 27,
     DisconnectClient = 49,
+    SetLanguage = 59,
     CallClassOperation = 101,
     COMOperation = 199,
     ChangePrincipal = 203,
@@ -187,8 +192,9 @@ export enum ParameterName {
     ReturnValue = 5,
     Something = 8,
     Index = 13,
-    User = 21,
-    Password = 22,
+    Language = 14, // COMMS_LANG Int32
+    User = 21, // COMMS_USER String
+    Password = 22, // COMMS_PASSWORD String
     Last = 25,
     UserId = 40,
     Parameter = 48,
@@ -296,6 +302,18 @@ export class Message {
         } else {
             msg.addString(ParameterName.Password, '');
         }
+        return msg;
+    }
+
+    /**
+     * Create a "SetLanugage" message.
+     *
+     * @param {string} language The number of the language (e.g. for documents see model).
+     */
+    public static setLanguage(language: number): Message {
+        const msg = new Message();
+        msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.SetLanguage]);
+        msg.addInt32(ParameterName.Language, language);
         return msg;
     }
 
@@ -572,6 +590,31 @@ export class Response {
         return this.buffer.includes(str);
     }
 
+    /**
+     * Sometimes the server simply sends an empty message as response (e.g. in setLanguage).
+     * In this cases we can just check, if the returned message is ok.
+     */
+    public isEmpty(): boolean {
+        // the buffer should only contain the header part
+        if (this.buffer.length !== MESSAGE_HEAD_LENGTH) {
+            return false;
+        }
+        // OID part of message head should be empty
+        const oidlow = ntohl(this.buffer, OID_LOW_INDEX);
+        if (oidlow !== 0) {
+            return false;
+        }
+        const oidhigh = ntohl(this.buffer, OID_HIGH_INDEX);
+        if (oidhigh !== 0) {
+            return false;
+        }
+        // operation part of message head should be empty
+        if (this.buffer[OPERATION_INDEX]  !== 0) {
+            return false;
+        }
+        return true;
+    }
+
     private getParamIndex(name: ParameterName) {
         if (this.isSimple()) {
             throw new Error('simple response cannot have a parameter');
@@ -826,6 +869,29 @@ export class SDSConnection {
                 const result = response.getInt32(ParameterName.ReturnValue);
                 if (result !== 0) {
                     reject(new Error(`unable to change principle to ${principalName}`));
+                } else {
+                    resolve();
+                }
+            }).catch((reason) => {
+                reject(reason);
+            });
+        });
+    }
+
+    /**
+     * Set the language.
+     * If the language number does not match a language, the server
+     * sets the language to 0 without error message.
+     *
+     * @param language The language number (e.g. for documents see model)
+     */
+    public setLanguage(language: number): Promise<void> {
+        // connectionLog.debug(`setLanguage`);
+        return new Promise<void>((resolve, reject) => {
+            this.send(Message.setLanguage(language)).then((response: Response) => {
+                const result = response.isEmpty();
+                if (result === false) {
+                    reject(new Error(`set language failed, server sent invalid response`));
                 } else {
                     resolve();
                 }
