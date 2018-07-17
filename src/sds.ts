@@ -79,6 +79,7 @@ import * as os from 'os';
 import { timeout } from 'promised-timeout';
 import * as cryptmd5 from './cryptmd5';
 import { htonl, ntohl, SocketLike } from './network';
+import { PDObject } from "./PDObject";
 
 const HELLO: Buffer = Buffer.from('GGCH$1$$', 'ascii');
 const ACK: Buffer = Buffer.from(term_utf8('valid'));
@@ -174,6 +175,8 @@ export enum Operation {
     COMOperation = 199,
     ChangePrincipal = 203,
     SrvGui = 209,
+    PDClassNewObject = 63, // @TODO richtig?
+    PDMetaComDllCall = 199
 }
 
 export enum COMOperation {
@@ -187,12 +190,14 @@ export enum SrvGuiOperation {
 
 export enum ParameterName {
     ClientId = 1,
+    ClassName = 2,
     ClassAndOp = 2,
     Value = 4,
     ReturnValue = 5,
     Something = 8,
     Index = 13,
     Language = 14, // COMMS_LANG Int32
+    ClassId = 16, // z.B. für PDClass::newObject
     User = 21, // COMMS_USER String
     Password = 22, // COMMS_PASSWORD String
     Last = 25,
@@ -204,6 +209,9 @@ export enum ParameterName {
     Filename = 87,
     Opcode = 88,
     Flag = 119,
+    IsTransObject = 18, // @TODO richtig?
+    Init = 53,
+    Properties= 29,
 }
 
 export enum Type {
@@ -219,6 +227,21 @@ export enum Type {
 }
 
 export class Message {
+
+    public setOperation(operation: Operation) {
+        this.buffer[8] = operation;
+        this.bufferedLength += 1;
+    }
+
+    public setOId(oId: string) {
+        const splitted = oId.split(":");
+        // @TODO eigentlich sollte statt 0 => 4 und statt 4 => 8 sein,
+        // allerdings klappt dann das Packen der Nachricht nicht mehr korrekt, da die Funktion erst ab dem 4. Byte anfängt zu lesen
+        htonl(this.buffer, 0, parseInt(splitted[0]));
+        htonl(this.buffer, 4, parseInt(splitted[1]));
+        this.bufferedLength += 8;
+    }
+
     /**
      * Create an arbitrary message from the given buffer.
      */
@@ -329,6 +352,47 @@ export class Message {
         return msg;
     }
 
+    public static PDMetaGetClassId(className: string): Message {
+        const msg = new Message;
+
+        //       -------- OID ---------  - Kennung der Operation -
+        msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.PDMetaComDllCall]);
+        msg.addInt32(ParameterName.Index, 11); // GETID
+        msg.addString(ParameterName.ClassName, className); // GETID
+
+        return msg;
+    }
+
+    public static PDMetaGetClasses() {
+        const msg = new Message();
+        //       -------- OID ---------  - Kennung der Operation -
+        msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.PDMetaComDllCall]);
+
+        // 1. Parameter
+        msg.addInt32(ParameterName.Index, 5); //GETCLASSES
+        msg.addBoolean(ParameterName.Properties, false);
+        return msg;
+    }
+
+    public static createNewPDObject(classId: number, isTransObject: boolean = false, init: boolean = true) {
+        const msg = new Message();
+        //             Byte 5 - 12                Byte 13
+        //       -------- OID ---------  - Kennung der Operation -
+        msg.add([0, 0, 0, 0, 0, 0, 0, 0, Operation.PDClassNewObject]);
+
+        // 1. Paramter: isTransactionObject
+        msg.addBoolean(ParameterName.IsTransObject, isTransObject);
+
+        // 2. Parameter: init (-defaults?!)
+        msg.addBoolean(ParameterName.Init, init);
+
+        // 3. Paramter: ID der zu erzeugenden Klasse
+        msg.addInt32(ParameterName.ClassId, classId);
+
+        return msg;
+        
+    }
+
     /**
      * Create a "RunScriptOnServer" message.
      *
@@ -393,7 +457,7 @@ export class Message {
      */
     public addString(parameterName: ParameterName, value: string): void {
         this.add([Type.String, parameterName]);
-        const stringSize = Buffer.from([0, 0, 0, 0]);
+        const stringSize = Buffer.from([0, 0, 0 , 0]);
         htonl(stringSize, 0, size_term_utf8(value));
         this.add(stringSize);
         this.add(term_utf8(value));
@@ -501,6 +565,15 @@ export class Response {
 
     public isSimple(): boolean {
         return this.length === 8;
+    }
+
+    public getOID() {
+        // Byte 0 - 3 = Länge der Nachricht
+        // Byte 4 - 11 = OID
+        const oIDIndexStart = 4;
+        const c = ntohl(this.buffer, 4);
+        const e = ntohl(this.buffer, 8);
+        return `${c}:${e}`;
     }
 
     public getInt32(name: ParameterName): number {
@@ -875,6 +948,85 @@ export class SDSConnection {
             }).catch((reason) => {
                 reject(reason);
             });
+        });
+    }
+
+    /**
+     * Liste aller verfügbaren PD-Klassennamen
+     * It works! :)
+     */
+    public pdMetaGetClasses(): Promise<string[]> {
+        return new Promise<string[]>((resolve, reject) => {
+            this.send(Message.PDMetaGetClasses()).then((response: Response) => {
+                resolve(response.getStringList(ParameterName.ReturnValue));
+            }).catch((reason) => {
+                reject(reason);
+            });
+        });
+    }
+
+    public pdMetaGetClassId(className: string): Promise<number> {
+        return new Promise<number>((resolve, reject) => {
+            this.send(Message.PDMetaGetClassId(className)).then((response: Response) => {
+                resolve(response.getInt32(ParameterName.ClassId));
+            });
+        });
+    }
+
+    public pdMetaGetClassesMap(): Promise<Map<string, number>> {
+        return new Promise<Map<string, number>>(async (resolve, reject) => {
+            const classesMap: Map<string, number> = new Map();
+
+            // Alle Klassennamen holen
+            const classNamesArray = await this.pdMetaGetClasses();
+            for (const className of classNamesArray) {
+                // Die ID der Klasse abfragen
+                const classId = await this.pdMetaGetClassId(className);
+                classesMap.set(className, classId);
+            }
+
+            resolve(classesMap);
+        });
+    }
+    
+    public createPDObject(classId: number, isTransactionObject: boolean = false, init: boolean = true): Promise<PDObject> {
+        return new Promise<PDObject>((resolve, reject) => {
+            this.send(Message.createNewPDObject(classId, isTransactionObject, init)).then((response: Response) => {
+                // @TODO OID aus der Antwort ermitteln
+                const pdObject: PDObject = new PDObject(response.getOID(), classId, ""); // @TODO
+                resolve(pdObject);
+            }).catch((reason) => {
+                reject(reason);
+            });
+        });
+    }
+
+    public setAttributePDObject(pdObject: PDObject, attributeName: string, attributeValue: any): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.send(pdObject.setAttribute(attributeName, attributeValue)).then((response) => {
+                const a = 0;
+                resolve();
+            }).catch((reason) => {
+                reject(reason);
+            })
+        });
+    }
+
+    public getAttributePDObject(pdObject: PDObject, attributeName: string): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            this.send(pdObject.getAttribute(attributeName)).then((response: Response) => {
+                resolve(response.getString(ParameterName.Value));
+            });
+        });
+    }
+    public syncPDObject(pdObject: PDObject): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.send(pdObject.sync()).then((response: Response) => {
+                const a = 0;
+                resolve();
+            }).catch((reason) => {
+                reject(reason);
+            })
         });
     }
 

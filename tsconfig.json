@@ -18,6 +18,7 @@
         "src/main.ts",
         "src/cryptmd5.ts",
         "src/network.ts",
-        "src/sds.ts"
+        "src/sds.ts",
+        "src/testPDObject.ts"
     ]
 }
