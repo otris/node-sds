@@ -12,8 +12,10 @@
             "preLaunchTask": "compile",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
             "args": [
-                "-u", "tdd",
-                "--timeout", "10000",
+                "-u",
+                "tdd",
+                "--timeout",
+                "10000",
                 "--colors",
                 "./out/test/"
             ],
@@ -27,6 +29,21 @@
                 "${workspaceRoot}/out/test/*.js"
             ],
             "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "name": "Launch Testsuite",
+            "type": "node",
+            "protocol": "inspector",
+            "request": "launch",
+            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+            "stopOnEntry": false,
+            "args": [
+                "--compilers",
+                "ts:ts-node/register",
+                "--no-timeouts",
+                "${file}"
+            ],
+            "cwd": "${workspaceRoot}"
         }
     ]
 }
