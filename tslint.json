@@ -4,29 +4,41 @@
   ],
   "rules": {
     "quotemark": [
-      "single"
+      "double"
     ],
+    "indent": [true, "tabs", 4],
     "no-console": [
       false
     ],
     "no-bitwise": false,
-    "interface-name": [
-      true,
-      "never-prefix"
+    "object-literal-sort-keys": true,
+    "arrow-parens": true,
+    "only-arrow-functions": [
+      true
     ],
-    "max-classes-per-file": [
-      false
+    "no-consecutive-blank-lines": [
+      true
+    ],
+    "max-line-length": [
+      120
+    ],
+    "ordered-imports": [
+      true,
+      {
+        "import-sources-order": "case-insensitive",
+        "named-imports-order": "case-insensitive"
+      }
+    ],
+    "member-ordering": [
+      true,
+      {
+        "order": "fields-first",
+        "alphabetize": true
+      }
     ],
     "variable-name": [
       true,
       "allow-leading-underscore"
-    ],
-    "object-literal-sort-keys": false,
-    "arrow-parens": false,
-    "only-arrow-functions": [
-      false
-    ],
-    "no-consecutive-blank-lines": [true],
-    "max-line-length": [120]
+    ]
   }
 }
