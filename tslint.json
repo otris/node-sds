@@ -4,6 +4,7 @@
   ],
   "rules": {
     "quotemark": [
+      true, 
       "double"
     ],
     "indent": [true, "tabs", 4],
@@ -14,7 +15,7 @@
     "object-literal-sort-keys": true,
     "arrow-parens": true,
     "only-arrow-functions": [
-      true
+      false
     ],
     "no-consecutive-blank-lines": [
       true
@@ -39,6 +40,7 @@
     "variable-name": [
       true,
       "allow-leading-underscore"
-    ]
+    ],
+    "no-empty-interface": false
   }
 }
