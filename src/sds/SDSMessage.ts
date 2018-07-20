@@ -128,16 +128,38 @@ export abstract class SDSMessage {
 		this._operation = -1;
 
 		if (buffer) {
-			if (buffer.length < 12) {
-				throw new Error(`The buffer has to be at least 12 bytes long, got ${buffer.length}`);
-			}
-
 			this.buffer = buffer;
 			this.bufferedLength = buffer.length;
 		} else {
 			this.buffer = Buffer.alloc(this.INITIAL_BUFFER_SIZE);
 			this.bufferedLength = 0;
 		}
+	}
+
+	/**
+	 * Returns the number of bytes of an utf-8 string plus a 0-terminus.
+	 * @param {string} str An arbitrary string
+	 * @returns Number of all code units plus a final '0'.
+	 */
+	public static length_term_utf8(str: string): number {
+		const byteLength = Buffer.byteLength(str);
+		return byteLength + 1;
+	}
+
+	/**
+	 * Returns a buffer (the bytes) of an utf-8 string plus a 0-terminus.
+	 * @param {string} str An arbitrary string
+	 * @returns A buffer containing all code units plus a final '0'.
+	 */
+	public static term_utf8(str: string): Buffer {
+		const byteLength = Buffer.byteLength(str);
+		const buffer = Buffer.alloc(byteLength + 1, str, "utf-8");
+		buffer[byteLength] = 0;
+		return buffer;
+	}
+
+	public toString(): string {
+		return `${JSON.stringify(this.buffer)}, Buffered length: ${this.bufferedLength}`;
 	}
 
 	/**

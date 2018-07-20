@@ -167,9 +167,9 @@ export class SDSRequest extends SDSMessage {
 
 		// [..., string size in network byte order, the string itself]
 		const stringSize = Buffer.from([0, 0, 0, 0]);
-		htonl(stringSize, 0, this.length_term_utf8(value));
+		htonl(stringSize, 0, SDSMessage.length_term_utf8(value));
 		this.add(stringSize);
-		this.add(this.term_utf8(value));
+		this.add(SDSMessage.term_utf8(value));
 	}
 
 	/**
@@ -204,7 +204,7 @@ export class SDSRequest extends SDSMessage {
 		let dataPartSize = 8; // (Point 1) + (Point 2)
 		for (const element of value) {
 			// 3.1 Add the length of the element in network byte order
-			const encodedElement = this.term_utf8(element);
+			const encodedElement = SDSMessage.term_utf8(element);
 			htonl(networkByteOrderBuffer, 0, encodedElement.length);
 			this.add(networkByteOrderBuffer);
 
@@ -216,27 +216,4 @@ export class SDSRequest extends SDSMessage {
 		// Now we have to update the dataPartSize in the buffer
 		htonl(this.buffer, dataSizeIndex, dataPartSize);
 	}
-
-	/**
-	 * Returns the number of bytes of an utf-8 string plus a 0-terminus.
-	 * @param {string} str An arbitrary string
-	 * @returns Number of all code units plus a final '0'.
-	 */
-	private length_term_utf8(str: string): number {
-		const byteLength = Buffer.byteLength(str);
-		return byteLength + 1;
-	}
-
-	/**
-	 * Returns a buffer (the bytes) of an utf-8 string plus a 0-terminus.
-	 * @param {string} str An arbitrary string
-	 * @returns A buffer containing all code units plus a final '0'.
-	 */
-	private term_utf8(str: string): Buffer {
-		const byteLength = Buffer.byteLength(str);
-		const buffer = Buffer.alloc(byteLength + 1, str, "utf-8");
-		buffer[byteLength] = 0;
-		return buffer;
-	}
-
 }

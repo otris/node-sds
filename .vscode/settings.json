@@ -13,5 +13,8 @@
     // When enabled, insert a final new line at the end of the file when saving it
     "files.insertFinalNewline": true,
     // Enable TSLint extension
-    "tslint.enable": true
+    "tslint.enable": true,
+    "cSpell.words": [
+        "ggch"
+    ]
 }

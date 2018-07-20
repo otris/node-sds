@@ -1,5 +1,6 @@
 import * as assert from "assert";
 import { ntohl } from "../network";
+import { SDSConnection } from "./SDSConnection";
 import { IParameterNamesTypesMap, Operations, ParameterNames, SDSMessage, Types } from "./SDSMessage";
 
 /** The first index a parameter can occur in a valid sds message */
@@ -63,6 +64,34 @@ export class SDSResponse extends SDSMessage {
 		} else {
 			throw new Error(`Unknown paramter ${parameterName}`);
 		}
+	}
+
+	/**
+	 * Determines if the response is a ACK
+	 * @returns true, if the response is an ACK, otherwise false
+	 */
+	public isACK(): boolean {
+		return this.buffer.equals(SDSConnection.ACK);
+	}
+
+	/**
+	 * Determines if the request was invalid
+	 * @returns true, if the response is an ACK, otherwise false
+	 */
+	public isInvalid(): boolean {
+		return this.buffer.equals(SDSConnection.INVALID);
+	}
+
+	public toString(): string {
+		let out = `${JSON.stringify(this.buffer)}, Buffered length: ${this.bufferedLength}\r\n\r\nParameters (${this.parameters.size})`;
+		if (this.parameters.size > 0) {
+			out += ":";
+			for (const [key, value] of this.parameters) {
+				out += `\r\n${JSON.stringify(value)}`;
+			}
+		}
+
+		return out;
 	}
 
 	/**
