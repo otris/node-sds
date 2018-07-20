@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { Types } from "../../src/sds/SDSMessage";
+import { Types, ParameterNames } from "../../src/sds/SDSMessage";
 import { SDSRequest } from "../../src/sds/SDSRequest";
 
 describe("Tests for generating sds requests", () => {
@@ -108,12 +108,25 @@ describe("Tests for generating sds requests", () => {
 		const messageParameter = request.pack().slice(13, 39);
 		expect(messageParameter).to.eql(Buffer.from([Types.STRING_LIST, parameterName, 0, 0, 0, 24, 0, 0, 0, 2, 0, 0, 0, 4, 49, 50, 51, 0, 0, 0, 0, 4, 52, 53, 54, 0]));
 	});
-});
 
-/*
-		const message = new Message();
-		message.setOId("0:0");
-		message.setOperation(0);
-		message.addBoolean(parameterName, false);
-		const packed = message.pack();
-*/
+	it("should not matter in which order properties of the SDSRequest-instance are set", () => {
+		const expectedBuffer: Buffer = Buffer.from([0, 0, 0, 19, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 1, 0, 0, 0, 1]);
+
+		// A bug causes that the some bytes were overwritten if you don't set the properties in a specific order
+		let request = new SDSRequest();
+		request.operation = 1; // The bug causes that the type of the paramter were overwritten by the operation
+		request.addParameter(ParameterNames.CLIENT_ID, 1);
+		expect(request.pack()).eql(expectedBuffer);
+
+		request = new SDSRequest();
+		request.addParameter(ParameterNames.CLIENT_ID, 1);
+		request.operation = 1;
+		expect(request.pack()).eql(expectedBuffer);
+
+		request = new SDSRequest();
+		request.operation = 1;
+		request.addParameter(ParameterNames.CLIENT_ID, 1);
+		request.oId = "0:0";
+		expect(request.pack()).eql(expectedBuffer);
+	});
+});
