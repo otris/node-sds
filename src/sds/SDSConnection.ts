@@ -3,7 +3,7 @@ import { createConnection, Socket } from "net";
 import * as os from "os";
 import { timeout } from "promised-timeout";
 import { ntohl } from "../../src/network";
-import { SDSMessage, ParameterNames } from "../../src/sds/SDSMessage";
+import { ParameterNames, SDSMessage } from "../../src/sds/SDSMessage";
 import { SDSRequest } from "./SDSRequest";
 import { SDSResponse } from "./SDSResponse";
 
