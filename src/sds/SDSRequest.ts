@@ -6,17 +6,25 @@ import { Operations, ParameterNames, SDSMessage, Types } from "./SDSMessage";
  */
 export class SDSRequest extends SDSMessage {
 
+	constructor() {
+		super();
+
+		// by default, the oID should be filled with 0-bytes (global server operations)
+		this.oId = "0:0";
+
+		// A request contains at least the oid (can be filled with 0-bytes) and an operation, so the buffered length
+		// has to be increased (or simple reset the operation property). If we don't do this, and call "addParameter" before we set the operation, the
+		// parameter will be written to the wrong position of the buffer
+		this.operation = -1;
+		this.bufferedLength = 9; // (8 Bytes for the oId, 1 Byte for the operation)
+	}
+
 	/**
 	 * Sets the object id to operate on
 	 * @param oId ID of the PD-Object
 	 * @returns The object id to operate on
 	 */
 	public set oId(oId: string) {
-		// If the object id was set before, wo don't have to increase the buffered size again
-		if (this._oId.length === 0) {
-			this.bufferedLength += 8;
-		}
-
 		this._oId = oId;
 
 		// note: the id will be moved to byte 5 to 13 while packaging
@@ -31,21 +39,8 @@ export class SDSRequest extends SDSMessage {
 	 * @param operation Identifier of the operation
 	 */
 	public set operation(operation: Operations) {
-		if (this._operation < 0) {
-			this.bufferedLength++;
-		}
-
 		// note: it's actually the 13th byte which will be set. The packaging function will insert 4 more bytes at the beginning
 		this.buffer[8] = this._operation = operation;
-	}
-
-	constructor() {
-		super();
-		this._oId = "";
-		this._operation = -1;
-
-		// by default, the oID should be filled with 0-bytes (global server operations)
-		this.oId = "0:0";
 	}
 
 	/**
