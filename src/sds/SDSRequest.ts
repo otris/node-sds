@@ -6,19 +6,6 @@ import { Operations, ParameterNames, SDSMessage, Types } from "./SDSMessage";
  */
 export class SDSRequest extends SDSMessage {
 
-	/** Holds the object id to operate on. By default, it's empty */
-	private _oId: string;
-
-	/** Holds the operation to execute on the server side */
-	private _operation: Operations;
-
-	/**
-	 * Returns the object id this request belongs to
-	 */
-	public get oId(): string {
-		return this._oId;
-	}
-
 	/**
 	 * Sets the object id to operate on
 	 * @param oId ID of the PD-Object
@@ -37,14 +24,6 @@ export class SDSRequest extends SDSMessage {
 		const splittedId = oId.split(":");
 		htonl(this.buffer, 0, parseInt(splittedId[0], 10));
 		htonl(this.buffer, 4, parseInt(splittedId[1], 10));
-	}
-
-	/**
-	 * Returns the operation which should be executed
-	 * @returns Operation which should be executed
-	 */
-	public get operation(): Operations {
-		return this._operation;
 	}
 
 	/**

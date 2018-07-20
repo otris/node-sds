@@ -1,3 +1,5 @@
+import { ntohl } from "../network";
+
 /**
  * Names of parameters and return values of server side operations
  */
@@ -78,6 +80,12 @@ export enum Types {
  */
 export abstract class SDSMessage {
 
+	/** Holds the object id to operate on. By default, it's empty */
+	protected _oId: string;
+
+	/** Holds the operation to execute on the server side */
+	protected _operation: Operations;
+
 	/** Contains the SDSMessage */
 	protected buffer: Buffer;
 
@@ -87,7 +95,38 @@ export abstract class SDSMessage {
 	/** Initial size of the created buffer */
 	private INITIAL_BUFFER_SIZE = 4096;
 
+	/**
+	 * Returns the object id the response belongs to
+	 * @returns The object id the response belongs to
+	 */
+	public get oId(): string {
+		if (this._oId.length < 1) {
+			// Byte 1 - 4 = Länge der Nachricht
+			// Byte 5 - 12 = OID
+			const oIdFirst = ntohl(this.buffer, 4);
+			const oIdLast = ntohl(this.buffer, 8);
+			this._oId = `${oIdFirst}:${oIdLast}`;
+		}
+
+		return this._oId;
+	}
+
+	/**
+	 * Returns the operation which should be executed
+	 * @returns Operation which should be executed
+	 */
+	public get operation(): Operations {
+		if (this._operation < 0) {
+			this._operation = this.buffer[12];
+		}
+
+		return this._operation;
+	}
+
 	constructor(buffer?: Buffer) {
+		this._oId = "";
+		this._operation = -1;
+
 		if (buffer) {
 			if (buffer.length < 12) {
 				throw new Error(`The buffer has to be at least 12 bytes long, got ${buffer.length}`);

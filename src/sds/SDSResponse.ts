@@ -36,49 +36,17 @@ interface IResponseParameter {
 }
 
 export class SDSResponse extends SDSMessage {
-	/** Holds the object id to operate on. By default, it's empty */
-	private _oId: string;
-
-	/** Holds the operation to execute on the server side */
-	private _operation: Operations;
-
 	/** Map with all response parameters of the response */
 	private parameters: Map<ParameterNames, IResponseParameter>;
 
 	/**
-	 * Returns the object id the response belongs to
-	 * @returns The object id the response belongs to
+	 * Parses the response from the JANUS-server and provides some operation to read the message
+	 * @param buffer Response buffer returned from the JANUS-server
 	 */
-	public get oId(): string {
-		if (this._oId.length < 1) {
-			// Byte 1 - 4 = Länge der Nachricht
-			// Byte 5 - 12 = OID
-			const oIdFirst = ntohl(this.buffer, 4);
-			const oIdLast = ntohl(this.buffer, 8);
-			this._oId = `${oIdFirst}:${oIdLast}`;
-		}
-
-		return this._oId;
-	}
-
-	/**
-	 * Returns the operation which should be executed
-	 * @returns Operation which should be executed
-	 */
-	public get operation(): Operations {
-		if (this._operation < 0) {
-			this._operation = this.buffer[12];
-		}
-
-		return this._operation;
-	}
-
 	constructor(buffer: Buffer) {
 		super(buffer);
-		this._oId = "";
-		this._operation = -1;
 
-		// create a map of parameters. It's easier for debugging and allows us to return requested paramters by
+		// create a map of parameters. It's easier for debugging and allows us to return requested parameters by
 		// using the map
 		this.parameters = this.parseResponseParameters();
 	}
