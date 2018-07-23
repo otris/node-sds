@@ -36,6 +36,7 @@ export class MockedJanusServer {
 		// Fill the PDMeta error messages
 		this.pdMetaErrorMessagesMap = new Map([
 			[16, `Login-Name, Mandant oder Passwort für "%v" nicht korrekt.`],
+			[18, `Sie sind dem gewünschten Mandanten leider nicht zugeordnet.`],
 			[21, `Login-Name oder Passwort für "%v" nicht korrekt.`],
 		]);
 	}
@@ -125,6 +126,27 @@ export class MockedJanusServer {
 	}
 
 	/**
+	 * Sends back a response for a change principal request
+	 * The request will be successful if the principal to change to equals "test", otherwise it will fail
+	 * @param request Request from the client
+	 */
+	private handleChangePrincipalRequest(request: SDSResponse) {
+		const response = new SDSRequest();
+
+		if (request.getParameter(ParameterNames.PRINCIPAL) === "test") {
+			response.addParameter(ParameterNames.RETURN_VALUE, 0);
+			response.addParameter(ParameterNames.PRINCIPAL, 1);
+			response.addParameter(45, "otris software AG"); // it's the field 'carrier' of the principal, but the parameter is not labeled
+		} else {
+			// Failure. Only valid if the principal equals "test"
+			response.addParameter(ParameterNames.RETURN_VALUE, 18);
+		}
+
+		response.operation = 173;
+		this.socket.write(response.pack());
+	}
+	
+	/**
 	 * Sends back a response for a change user request.
 	 * The request will be successful for the user "admin" with passwort "test123" or user "admin2" with password ""
 	 * For other combinations an error will be returned
@@ -208,6 +230,10 @@ export class MockedJanusServer {
 
 			case Operations.COM_OPERATION:
 				this.handleComOperationRequest(request);
+				break;
+			
+			case Operations.CHANGE_PRINCIPAL:
+				this.handleChangePrincipalRequest(request);
 				break;
 
 			default:

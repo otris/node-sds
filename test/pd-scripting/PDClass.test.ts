@@ -16,6 +16,7 @@ describe("Tests for the connection handler for the communication with the JANUS-
 		// Init the mocked JANUS-server and connect with it to test operations of the PDClass
 		await mockedJANUSServer.init();
 		await sdsConnection.connect("test.node-sds.pdclass", "localhost", 11001);
+		// await sdsConnection.connect("test.node-sds.pdclass", "wehrstedt.cloud", 11000);
 	});
 
 	it("should successfully change the logged in user", () => {
@@ -41,5 +42,16 @@ describe("Tests for the connection handler for the communication with the JANUS-
 		return expect(sdsConnection.PDClass.changeUser("admin", "wrongPassword"))
 			.to.be.eventually.rejectedWith(Error)
 			.and.have.property("message").which.equals(`Change user request failed: Login-Name oder Passwort für "%v" nicht korrekt.`);
+	});
+
+	it("should change the principal successfully", () => {
+		return expect(sdsConnection.PDClass.changePrincipal("test")).to.not.be.eventually.rejected;
+	});
+
+	it("should fail to change the principal if the principal doesn't exists", () => {
+		const principal = "notExisting";
+		return expect(sdsConnection.PDClass.changePrincipal(principal))
+			.to.be.eventually.rejectedWith(Error)
+			.and.have.property("message").which.equals(`Unable to change principal to ${principal}: Sie sind dem gewünschten Mandanten leider nicht zugeordnet.\r\nError code: 18`);
 	});
 });
