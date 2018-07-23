@@ -1,31 +1,7 @@
 import { ntohl } from "../network";
 
-/**
- * Names of parameters and return values of server side operations
- */
-export enum ParameterNames {
-	CLIENT_ID = 1,
-	CLASS_NAME = 2,
-	VALUE = 4,
-	RETURN_VALUE = 5,
-	SOMETHING = 8,
-	INDEX = 13,
-	LANGUAGE = 14,
-	CLASS_ID = 16,
-	IS_TRANSACTION_OBJECT = 18,
-	USER = 21,
-	PASSWORD = 22,
-	LAST = 25,
-	PROPERTIES = 29,
-	USER_ID = 40,
-	PARAMETER = 48,
-	PARAMETER_PDO = 49,
-	CONVERSION = 51,
-	INIT = 53,
-	PRINCIPAL = 80,
-	FILENAME = 87,
-	OP_CODE = 88,
-	FLAG = 119,
+export enum ComOperations {
+	ERROR_MESSAGE = 17,
 }
 
 /**
@@ -61,6 +37,38 @@ export interface IParameterNamesTypesMap {
 /* tslint:enable:member-ordering */
 
 export enum Operations {
+	CHANGE_USER = 27,
+
+	/** Used to request the string representation of an error code (PDMeta.getString) */
+	COM_OPERATION = 199,
+}
+
+/**
+ * Names of parameters and return values of server side operations
+ */
+export enum ParameterNames {
+	CLIENT_ID = 1,
+	CLASS_NAME = 2,
+	VALUE = 4,
+	RETURN_VALUE = 5,
+	SOMETHING = 8,
+	INDEX = 13,
+	LANGUAGE = 14,
+	CLASS_ID = 16,
+	IS_TRANSACTION_OBJECT = 18,
+	USER = 21,
+	PASSWORD = 22,
+	LAST = 25,
+	PROPERTIES = 29,
+	USER_ID = 40,
+	PARAMETER = 48,
+	PARAMETER_PDO = 49,
+	CONVERSION = 51,
+	INIT = 53,
+	PRINCIPAL = 80,
+	FILENAME = 87,
+	OP_CODE = 88,
+	FLAG = 119,
 }
 
 export enum Types {
@@ -129,7 +137,7 @@ export abstract class SDSMessage {
 
 		if (buffer) {
 			this.buffer = buffer;
-			this.bufferedLength = buffer.length;
+			this.bufferedLength = ntohl(buffer, 0);
 		} else {
 			this.buffer = Buffer.alloc(this.INITIAL_BUFFER_SIZE);
 			this.bufferedLength = 0;
@@ -159,7 +167,7 @@ export abstract class SDSMessage {
 	}
 
 	public toString(): string {
-		return `${JSON.stringify(this.buffer)}, Buffered length: ${this.bufferedLength}`;
+		return `${JSON.stringify(this.buffer)}\r\n\r\nBuffered length: ${this.bufferedLength}\r\nOId: ${this.oId}\r\nOperation: ${this.operation}`;
 	}
 
 	/**

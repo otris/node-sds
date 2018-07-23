@@ -35,6 +35,38 @@ export class SDSRequest extends SDSMessage {
 	}
 
 	/**
+	 * Appends the passed bytes to the message buffer
+	 * @param bytes Bytes which should be appended to the buffer
+	 */
+	public add(bytes: Buffer | number[]) {
+		const spaceLeft = this.buffer.length - this.bufferedLength;
+		if (spaceLeft < bytes.length) {
+			// @todo: Maybe we should use Buffer.concat instead (test which one is faster)
+			const newCapacity = Math.max(this.bufferedLength + bytes.length, 1.5 * this.buffer.length);
+			const newBuffer = Buffer.alloc(newCapacity);
+			this.buffer.copy(newBuffer);
+			this.buffer = newBuffer;
+		}
+
+		if (bytes instanceof Buffer) {
+			// copy the bytes to the message buffer and make sure that all bytes were copied successfully
+			const copiedBytes = bytes.copy(this.buffer, this.bufferedLength);
+			if (copiedBytes !== bytes.length) {
+				throw new Error(`Can't copy all bytes to the target buffer: Copied ${copiedBytes} of ${bytes.length} bytes.`);
+			}
+
+			this.bufferedLength += copiedBytes;
+		} else {
+			// Simply add the number values to the buffer, so we don't need to create a new buffer
+			// which waste memory and time
+			for (const byte of bytes) {
+				this.buffer[this.bufferedLength] = byte;
+				this.bufferedLength++;
+			}
+		}
+	}
+
+	/**
 	 * Sets the operation to execute on the server side
 	 * @param operation Identifier of the operation
 	 */
@@ -87,38 +119,6 @@ export class SDSRequest extends SDSMessage {
 		htonl(message, 0, messageSize);
 		this.buffer.copy(message, 4, 0, this.bufferedLength);
 		return message;
-	}
-
-	/**
-	 * Appends the passed bytes to the message buffer
-	 * @param bytes Bytes which should be appended to the buffer
-	 */
-	private add(bytes: Buffer | number[]) {
-		const spaceLeft = this.buffer.length - this.bufferedLength;
-		if (spaceLeft < bytes.length) {
-			// @todo: Maybe we should use Buffer.concat instead (test which one is faster)
-			const newCapacity = Math.max(this.bufferedLength + bytes.length, 1.5 * this.buffer.length);
-			const newBuffer = Buffer.alloc(newCapacity);
-			this.buffer.copy(newBuffer);
-			this.buffer = newBuffer;
-		}
-
-		if (bytes instanceof Buffer) {
-			// copy the bytes to the message buffer and make sure that all bytes were copied successfully
-			const copiedBytes = bytes.copy(this.buffer, this.bufferedLength);
-			if (copiedBytes !== bytes.length) {
-				throw new Error(`Can't copy all bytes to the target buffer: Copied ${copiedBytes} of ${bytes.length} bytes.`);
-			}
-
-			this.bufferedLength += copiedBytes;
-		} else {
-			// Simply add the number values to the buffer, so we don't need to create a new buffer
-			// which waste memory and time
-			for (const byte of bytes) {
-				this.buffer[this.bufferedLength] = byte;
-				this.bufferedLength++;
-			}
-		}
 	}
 
 	/**

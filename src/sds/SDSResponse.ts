@@ -44,12 +44,16 @@ export class SDSResponse extends SDSMessage {
 	 * Parses the response from the JANUS-server and provides some operation to read the message
 	 * @param buffer Response buffer returned from the JANUS-server
 	 */
-	constructor(buffer: Buffer) {
+	constructor(buffer: Buffer, parseBuffer: boolean = true) {
 		super(buffer);
 
 		// create a map of parameters. It's easier for debugging and allows us to return requested parameters by
 		// using the map
-		this.parameters = this.parseResponseParameters();
+		if (parseBuffer) {
+			this.parameters = this.parseResponseParameters();
+		} else {
+			this.parameters = new Map();
+		}
 	}
 
 	/**
@@ -83,7 +87,7 @@ export class SDSResponse extends SDSMessage {
 	}
 
 	public toString(): string {
-		let out = `${JSON.stringify(this.buffer)}, Buffered length: ${this.bufferedLength}\r\n\r\nParameters (${this.parameters.size})`;
+		let out = `${JSON.stringify(this.buffer)}\r\n\r\nBuffered length: ${this.bufferedLength}\r\nOId: ${this.oId}\r\nOperation: ${this.operation}\r\nParameters (${this.parameters.size})`;
 		if (this.parameters.size > 0) {
 			out += ":";
 			for (const [key, value] of this.parameters) {
