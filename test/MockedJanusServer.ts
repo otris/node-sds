@@ -1,7 +1,11 @@
 import { createServer, Server, Socket } from "net";
+import { ntohl } from "../src/network";
+import { SDSConnection } from "../src/sds/SDSConnection";
+import { ParameterNames, Operations, ComOperations } from "../src/sds/SDSMessage";
+import { SDSRequest } from "../src/sds/SDSRequest";
+import { SDSResponse } from "../src/sds/SDSResponse";
 import { crypt_md5 } from "../src/cryptmd5";
 import { PDClass } from "../src/pd-scripting/PDClass";
-import { ComOperations, Operations, ParameterNames } from "../src/sds/SDSMessage";
 import { SDSConnection } from "../../src/sds/SDSConnection";
 import { SDSRequest } from "../../src/sds/SDSRequest";
 
@@ -16,6 +20,8 @@ export class MockedJanusServer {
 	/** Message size of a received message (needed to know if a message was received completely) */
 	private messageSize: number;
 
+	private pdMetaErrorMessagesMap: Map<number, string>;
+
 	/** Server socket */
 	private server: Server;
 
@@ -28,6 +34,12 @@ export class MockedJanusServer {
 		this.messageSize = 0;
 		this.server = null as any;
 		this.socket = null as any;
+
+		// Fill the PDMeta error messages
+		this.pdMetaErrorMessagesMap = new Map([
+			[16, `Login-Name, Mandant oder Passwort für "%v" nicht korrekt.`],
+			[21, `Login-Name oder Passwort für "%v" nicht korrekt.`],
+		]);
 	}
 
 	/**
@@ -84,7 +96,7 @@ export class MockedJanusServer {
 			// send back the ACK
 			this.socket.write(SDSConnection.ACK);
 		} else if (/.+\son\s+.+/.test(data.toString())) {
-			// the client told us his name and the os, send him a id back
+			// the client told us his name and the os, send him an id back
 			// @todo: I don't know how the id has to look like. For now, send a random 6 digit long number
 			const clientId = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
 			const response = new SDSRequest(); // We use the request-class here again, thats fine
@@ -105,13 +117,79 @@ export class MockedJanusServer {
 
 			if (this.bufferedMessageBytes === this.messageSize) {
 				// We received the message completely. Handle it
-				this.handleRequest(this.message);
+				this.handleRequest(this.message.slice(0, this.messageSize));
 
 				// Reset the message variables
 				this.messageSize = this.bufferedMessageBytes = 0;
 				this.message = Buffer.alloc(4096);
 			}
 		}
+	}
+
+	/**
+	 * Sends back a response for a change user request.
+	 * The request will be successful for the user "admin" with passwort "test123" or user "admin2" with password ""
+	 * For other combinations an error will be returned
+	 * @param request Request from the client
+	 */
+	private handleChangeUserRequest(request: SDSResponse) {
+		let response = new SDSRequest();
+		const hashedPassword = request.getParameter(ParameterNames.PASSWORD);
+		const login = request.getParameter(ParameterNames.USER);
+
+		// Response for invalid password
+		const responseInvalidPass = new SDSRequest();
+		responseInvalidPass.operation = 127;
+		responseInvalidPass.addParameter(ParameterNames.RETURN_VALUE, 21); // PDMeta error code
+
+		if (login === "admin") {
+			if (hashedPassword === crypt_md5("test123", PDClass.JANUS_CRYPTMD5_SALT).value) {
+				response.operation = 173; // don't know
+				response.addParameter(ParameterNames.RETURN_VALUE, 0);
+				response.addParameter(ParameterNames.USER, "Administrator");
+				response.addParameter(ParameterNames.USER_ID, 1);
+				response.addParameter(ParameterNames.PASSWORD, hashedPassword);
+			} else {
+				response = responseInvalidPass;
+			}
+		} else if (login === "admin2") {
+			if (hashedPassword === "") {
+				response.operation = 173; // don't know
+				response.addParameter(ParameterNames.RETURN_VALUE, 0);
+				response.addParameter(ParameterNames.USER, "Administrator2");
+				response.addParameter(ParameterNames.USER_ID, 2);
+				response.addParameter(ParameterNames.PASSWORD, hashedPassword);
+			} else {
+				response = responseInvalidPass;
+			}
+		} else {
+			// Unknown user
+			response.operation = 123;
+			response.addParameter(ParameterNames.RETURN_VALUE, 16); // PDMeta error code
+		}
+
+		this.socket.write(response.pack());
+	}
+
+	private handleComOperationRequest(request: SDSResponse) {
+		const response = new SDSRequest();
+
+		switch (request.getParameter(ParameterNames.INDEX)) {
+			case ComOperations.ERROR_MESSAGE:
+				const pdMetaIndex = request.getParameter(ParameterNames.VALUE) as number;
+				if (this.pdMetaErrorMessagesMap.has(pdMetaIndex)) {
+					response.addParameter(ParameterNames.RETURN_VALUE, this.pdMetaErrorMessagesMap.get(pdMetaIndex) as string);
+				} else {
+					throw new Error(`PDMeta error message ${pdMetaIndex} unknown`);
+				}
+				break;
+
+			default:
+				throw new Error(`Unknown com operation: ${request.getParameter(ParameterNames.INDEX)}`);
+		}
+
+		response.operation = 173;
+		this.socket.write(response.pack());
 	}
 
 	/**
@@ -125,6 +203,18 @@ export class MockedJanusServer {
 		const request = new SDSResponse(requestBuffer);
 
 		// Handle the request and send a response
-		throw new Error("Not implemented");
+		switch (request.operation) {
+			case Operations.CHANGE_USER:
+				this.handleChangeUserRequest(request);
+				break;
+
+			case Operations.COM_OPERATION:
+				this.handleComOperationRequest(request);
+				break;
+
+			default:
+				throw new Error(`Unknown operation: ${request.operation}`);
+		}
+
 	}
 }

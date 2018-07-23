@@ -2,14 +2,13 @@ import { expect } from "chai";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { SDSConnection } from "../../src/sds/SDSConnection";
-import { MockedJanusServer } from "./MockedJanusServer";
+import { MockedJanusServer } from "../MockedJanusServer";
 
 chai.use(chaiAsPromised);
 
-// For the unit tests we need to mock a JANUS-server that sends back meaningful and
-// correct responses to incoming requests
-
-describe("Tests for the connection handler for the communication with the JANUS-server", async () => {
+describe("Tests for the connection handler for the communication with the JANUS-server", () => {
+	// For the unit tests we need to mock a JANUS-server that sends back meaningful and
+	// correct responses to incoming requests
 	const mockedJANUSServer = new MockedJanusServer();
 
 	before(async () => {
