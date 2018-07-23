@@ -37,6 +37,7 @@ export interface IParameterNamesTypesMap {
 /* tslint:enable:member-ordering */
 
 export enum Operations {
+	CHANGE_PRINCIPAL = 203,
 	CHANGE_USER = 27,
 
 	/** Used to request the string representation of an error code (PDMeta.getString) */

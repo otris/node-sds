@@ -18,6 +18,27 @@ export class PDClass {
 	}
 
 	/**
+	 * Changes the principal which the client is connected to
+	 * @param principal Name of the principal
+	 */
+	public changePrincipal(principal: string): Promise<void> {
+		return new Promise<void>(async (resolve, reject) => {
+			const request = new SDSRequest();
+			request.operation = Operations.CHANGE_PRINCIPAL;
+			request.addParameter(ParameterNames.PRINCIPAL, principal);
+
+			const response = await this.sdsConnection.send(request);
+			const result = response.getParameter(ParameterNames.RETURN_VALUE) as number;
+			if (result === 0) {
+				resolve();
+			} else {
+				const errorMessage = await this.sdsConnection.PDMeta.getString(result);
+				reject(new Error(`Unable to change principal to ${principal}: ${errorMessage}\r\nError code: ${result}`));
+			}
+		});
+	}
+
+	/**
 	 * Changes the user which is logged in
 	 * @param login Login of the user
 	 * @param password password of the user or hashed MD5-value of the password
