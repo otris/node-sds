@@ -26,4 +26,8 @@ describe("Tests for the PDMeta-class", () => {
 	it("should return a list of available classes of the JANUS-application", () => {
 		return expect(sdsConnection.PDMeta.getClasses()).to.eventually.eql(["AccessProfile", "DlcAction", "Fellow"]);
 	});
+
+	it("should return the id as a number of the passed JANUS-class", () => {
+		return expect(sdsConnection.PDMeta.getClassId("AccessProfile")).to.eventually.be.a("number");
+	});
 });

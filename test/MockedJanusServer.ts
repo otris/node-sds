@@ -209,6 +209,11 @@ export class MockedJanusServer {
 				response.addParameter(ParameterNames.RETURN_VALUE, ["AccessProfile", "DlcAction", "Fellow"]);
 				break;
 
+			case ComOperations.GET_CLASS_ID:
+				// Return a random integer, the class id could change in future and should not matter for testing
+				response.addParameter(ParameterNames.CLASS_ID, Math.floor(Math.random() * (100 - 1 + 1)) + 1);
+				break;
+
 			default:
 				throw new Error(`Unknown com operation: ${request.getParameter(ParameterNames.INDEX)}`);
 		}
