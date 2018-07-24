@@ -204,6 +204,11 @@ export class MockedJanusServer {
 				}
 				break;
 
+			case ComOperations.GET_CLASSES:
+				// return a fixed list of classes
+				response.addParameter(ParameterNames.RETURN_VALUE, ["AccessProfile", "DlcAction", "Fellow"]);
+				break;
+
 			default:
 				throw new Error(`Unknown com operation: ${request.getParameter(ParameterNames.INDEX)}`);
 		}

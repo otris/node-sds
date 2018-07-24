@@ -16,7 +16,6 @@ describe("Tests for the connection handler for the communication with the JANUS-
 		// Init the mocked JANUS-server and connect with it to test operations of the PDClass
 		await mockedJANUSServer.init();
 		await sdsConnection.connect("test.node-sds.pdclass", "localhost", 11001);
-		// await sdsConnection.connect("test.node-sds.pdclass", "wehrstedt.cloud", 11000);
 	});
 
 	it("should successfully change the logged in user", () => {
