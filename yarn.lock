@@ -62,6 +62,10 @@
   version "7.0.67"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-7.0.67.tgz#3aeacf429e24e08e14d7621039d37b7f53542ecf"
 
+"@types/promise.prototype.finally@^2.0.2":
+  version "2.0.2"
+  resolved "http://192.168.10.64/@types%2fpromise.prototype.finally/-/promise.prototype.finally-2.0.2.tgz#68fefb8f0e23f21893a33740c931c79f44be3499"
+
 "@types/shelljs@0.7.8":
   version "0.7.8"
   resolved "https://registry.yarnpkg.com/@types/shelljs/-/shelljs-0.7.8.tgz#4b4d6ee7926e58d7bca448a50ba442fd9f6715bd"
@@ -214,6 +218,13 @@ deep-eql@^3.0.0:
   dependencies:
     type-detect "^4.0.0"
 
+define-properties@^1.1.2:
+  version "1.1.2"
+  resolved "http://192.168.10.64/define-properties/-/define-properties-1.1.2.tgz#83a73f2fea569898fb737193c8f873caf6d45c94"
+  dependencies:
+    foreach "^2.0.5"
+    object-keys "^1.0.8"
+
 diff@1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/diff/-/diff-1.4.0.tgz#7f28d2eb9ee7b15a97efd89ce63dcfdaa3ccbabf"
@@ -225,6 +236,24 @@ diff@^3.1.0, diff@^3.2.0:
 eol@^0.9.1:
   version "0.9.1"
   resolved "https://registry.yarnpkg.com/eol/-/eol-0.9.1.tgz#f701912f504074be35c6117a5c4ade49cd547acd"
+
+es-abstract@^1.9.0:
+  version "1.12.0"
+  resolved "http://192.168.10.64/es-abstract/-/es-abstract-1.12.0.tgz#9dbbdd27c6856f0001421ca18782d786bf8a6165"
+  dependencies:
+    es-to-primitive "^1.1.1"
+    function-bind "^1.1.1"
+    has "^1.0.1"
+    is-callable "^1.1.3"
+    is-regex "^1.0.4"
+
+es-to-primitive@^1.1.1:
+  version "1.1.1"
+  resolved "http://192.168.10.64/es-to-primitive/-/es-to-primitive-1.1.1.tgz#45355248a88979034b6792e19bb81f2b7975dd0d"
+  dependencies:
+    is-callable "^1.1.1"
+    is-date-object "^1.0.1"
+    is-symbol "^1.0.1"
 
 escape-string-regexp@1.0.2:
   version "1.0.2"
@@ -238,6 +267,10 @@ esutils@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/esutils/-/esutils-2.0.2.tgz#0abf4f1caa5bcb1f7a9d8acc6dea4faaa04bac9b"
 
+foreach@^2.0.5:
+  version "2.0.5"
+  resolved "http://192.168.10.64/foreach/-/foreach-2.0.5.tgz#0bee005018aeb260d0a3af3ae658dd0136ec1b99"
+
 fs-extra@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-5.0.0.tgz#414d0110cdd06705734d055652c5411260c31abd"
@@ -249,6 +282,10 @@ fs-extra@^5.0.0:
 fs.realpath@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/fs.realpath/-/fs.realpath-1.0.0.tgz#1504ad2523158caa40db4a2787cb01411994ea4f"
+
+function-bind@^1.1.1:
+  version "1.1.1"
+  resolved "http://192.168.10.64/function-bind/-/function-bind-1.1.1.tgz#a56899d3ea3c9bab874bb9773b7c5ede92f4895d"
 
 get-func-name@^2.0.0:
   version "2.0.0"
@@ -296,6 +333,12 @@ has-ansi@^2.0.0:
   dependencies:
     ansi-regex "^2.0.0"
 
+has@^1.0.1:
+  version "1.0.3"
+  resolved "http://192.168.10.64/has/-/has-1.0.3.tgz#722d7cbfc1f6aa8241f16dd814e011e1f41e8796"
+  dependencies:
+    function-bind "^1.1.1"
+
 highlight.js@^9.0.0:
   version "9.12.0"
   resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-9.12.0.tgz#e6d9dbe57cbefe60751f02af336195870c90c01e"
@@ -318,6 +361,24 @@ interpret@^1.0.0:
 is-buffer@^1.1.5:
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/is-buffer/-/is-buffer-1.1.6.tgz#efaa2ea9daa0d7ab2ea13a97b2b8ad51fefbe8be"
+
+is-callable@^1.1.1, is-callable@^1.1.3:
+  version "1.1.4"
+  resolved "http://192.168.10.64/is-callable/-/is-callable-1.1.4.tgz#1e1adf219e1eeb684d691f9d6a05ff0d30a24d75"
+
+is-date-object@^1.0.1:
+  version "1.0.1"
+  resolved "http://192.168.10.64/is-date-object/-/is-date-object-1.0.1.tgz#9aa20eb6aeebbff77fbd33e74ca01b33581d3a16"
+
+is-regex@^1.0.4:
+  version "1.0.4"
+  resolved "http://192.168.10.64/is-regex/-/is-regex-1.0.4.tgz#5517489b547091b0930e095654ced25ee97e9491"
+  dependencies:
+    has "^1.0.1"
+
+is-symbol@^1.0.1:
+  version "1.0.1"
+  resolved "http://192.168.10.64/is-symbol/-/is-symbol-1.0.1.tgz#3cc59f00025194b6ab2e38dbae6689256b660572"
 
 jade@0.26.3:
   version "0.26.3"
@@ -426,6 +487,10 @@ nmtree@^1.0.3:
   dependencies:
     commander "^2.11.0"
 
+object-keys@^1.0.8:
+  version "1.0.12"
+  resolved "http://192.168.10.64/object-keys/-/object-keys-1.0.12.tgz#09c53855377575310cca62f55bb334abff7b3ed2"
+
 once@^1.3.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/once/-/once-1.4.0.tgz#583b1aa775961d4b113ac17d9c50baef9dd76bd1"
@@ -454,6 +519,14 @@ pathval@^1.0.0:
 progress@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/progress/-/progress-2.0.0.tgz#8a1be366bf8fc23db2bd23f10c6fe920b4389d1f"
+
+promise.prototype.finally@^3.1.0:
+  version "3.1.0"
+  resolved "http://192.168.10.64/promise.prototype.finally/-/promise.prototype.finally-3.1.0.tgz#66f161b1643636e50e7cf201dc1b84a857f3864e"
+  dependencies:
+    define-properties "^1.1.2"
+    es-abstract "^1.9.0"
+    function-bind "^1.1.1"
 
 promised-timeout@^0.3.3:
   version "0.3.3"

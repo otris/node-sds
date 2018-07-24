@@ -1,6 +1,7 @@
 import { EventEmitter } from "events";
 import { createConnection, Socket } from "net";
 import * as os from "os";
+import * as promisePrototypeFinally from "promise.prototype.finally";
 import { timeout } from "promised-timeout";
 import { ntohl } from "../network";
 import { PDClass } from "../pd-scripting/PDClass";
@@ -8,6 +9,11 @@ import { PDMeta } from "../pd-scripting/PDMeta";
 import { ParameterNames, SDSMessage } from "./SDSMessage";
 import { SDSRequest } from "./SDSRequest";
 import { SDSResponse } from "./SDSResponse";
+
+// make Promise.finally available
+promisePrototypeFinally.shim();
+
+declare type RequestQueueElement = Buffer | SDSRequest;
 
 export class SDSConnection extends EventEmitter {
 
@@ -31,6 +37,9 @@ export class SDSConnection extends EventEmitter {
 	/** Buffered bytes of the message */
 	private bufferedMessageBytes: number;
 
+	/** Indicates whether a request is currently in process */
+	private isBusy: boolean;
+
 	/** Indicates the current connection status */
 	private isConnected: boolean;
 
@@ -51,6 +60,7 @@ export class SDSConnection extends EventEmitter {
 		this.messageSize = 0;
 		this.isConnected = false;
 		this.socket = null as any;
+		this.isBusy = false;
 
 		// Initialize functions
 		this.PDClass = new PDClass(this);
@@ -113,25 +123,33 @@ export class SDSConnection extends EventEmitter {
 	 * @param waitForResponse when send() is called from disconnect(), we shouldn't wait for a response because
 	 *                        we won't get one. When setting this variable to false, we can avoid the timeout error.
 	 */
-	public send(request: SDSRequest | Buffer, waitForResponse: boolean = true): Promise<SDSResponse> {
+	public async send(request: SDSRequest | Buffer, waitForResponse: boolean = true): Promise<SDSResponse> {
 		if (!this.isConnected) {
 			throw new Error("The client is not connected");
+		}
+
+		// Wait with the next request as long as the current request is active
+		while (this.isBusy) {
+			await this.sleep(500);
 		}
 
 		// if send is called by disconnect(), the server sends no response,
 		// so call send without waiting for response to avoid the timeout error
 		if (!waitForResponse) {
-			if (request instanceof SDSRequest) {
-				this.socket.write(request.pack());
-			} else {
-				this.socket.write(request);
-			}
-
 			return new Promise<SDSResponse>((resolve) => {
+				if (request instanceof SDSRequest) {
+					this.socket.write(request.pack());
+				} else {
+					this.socket.write(request);
+				}
+
 				// @todo: Create a qualified "disconnect" response
 				resolve();
 			});
 		} else {
+			// add the current request to the queue to prevent sending requests parallel
+			this.isBusy = true;
+
 			// normal case: call send with timeout
 			const ms = 6000;
 			const response: Promise<SDSResponse> = this.waitForResponse();
@@ -147,6 +165,8 @@ export class SDSConnection extends EventEmitter {
 				error: new Error(`Request timed out (after ${ms} ms)`),
 				promise: response,
 				time: ms,
+			}).finally(() => {
+				this.isBusy = false;
 			});
 		}
 	}
@@ -196,6 +216,14 @@ export class SDSConnection extends EventEmitter {
 				this.message = Buffer.alloc(4096);
 			}
 		}
+	}
+
+	/**
+	 * Sleeps for a given time
+	 * @param ms Time in milliseconds
+	 */
+	private sleep(ms: number) {
+		return new Promise( (resolve) => setTimeout(resolve, ms) );
 	}
 
 	/**
