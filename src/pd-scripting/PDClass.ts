@@ -3,6 +3,7 @@ import { SDSConnection } from "../sds/SDSConnection";
 import { Operations, ParameterNames } from "../sds/SDSMessage";
 import { SDSRequest } from "../sds/SDSRequest";
 import { JANUSClass } from "./JANUSClass";
+import { PDObject } from "./PDObject";
 
 /** Id of a logged in user */
 export type UserId = number;
@@ -64,6 +65,35 @@ export class PDClass extends JANUSClass {
 				// Error occurred. Get the error message from the server
 				const errorMessage = await this.getFormattedError(`Change user request failed`, result);
 				reject(new Error(errorMessage));
+			}
+		});
+	}
+
+	/**
+	 * Creates a instance of a given class
+	 * @param className Class name to create an instance of
+	 * @param isTransactionObject Specifies if the object is a transaction object
+	 * @param initDefaults Specifies if default values should be initialized
+	 */
+	public newObject(className: string, isTransactionObject: boolean = false, initDefaults: boolean = true): Promise<PDObject> {
+		return new Promise(async (resolve, reject) => {
+			const request = new SDSRequest();
+			request.operation = Operations.PDCLASS_NEWOBJECT;
+			request.addParameter(ParameterNames.IS_TRANSACTION_OBJECT, isTransactionObject);
+			request.addParameter(ParameterNames.INIT, initDefaults);
+
+			const classId = await this.sdsConnection.PDMeta.getClassId(className); // classes and class names are cached, so this causes no performance issues
+			request.addParameter(ParameterNames.CLASS_ID, classId);
+
+			const response = await this.sdsConnection.send(request);
+			if (response.oId === "0:0") {
+				// error occurred
+				const result = response.getParameter(ParameterNames.RETURN_VALUE) as number;
+				const errorMessage = await this.getFormattedError(`Unable to create object of class '${className}'`, result);
+				reject(new Error(errorMessage));
+			} else {
+				const pdObject = new PDObject(response.oId, classId, className);
+				resolve(pdObject);
 			}
 		});
 	}

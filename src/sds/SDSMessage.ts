@@ -42,7 +42,9 @@ export enum Operations {
 	CHANGE_PRINCIPAL = 203,
 	CHANGE_USER = 27,
 
-	/** Used to request the string representation of an error code (PDMeta.getString) */
+	PDCLASS_NEWOBJECT = 63,
+
+	/** Used to request the string representation of an error code (PDMeta.getString) or to get the available class names of the JANUS-application (PDMeta.getClasses) */
 	COM_OPERATION = 199,
 }
 
