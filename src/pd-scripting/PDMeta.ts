@@ -30,6 +30,24 @@ export class PDMeta {
 	}
 
 	/**
+	 * Resolves the internal class id for the passed class
+	 * @param className Name of the class
+	 * @returns Id of the class
+	 */
+	public getClassId(className: string): Promise<number> {
+		return new Promise(async (resolve, reject) => {
+			const request = new SDSRequest();
+			request.operation = Operations.COM_OPERATION;
+			request.addParameter(ParameterNames.INDEX, ComOperations.GET_CLASS_ID);
+			request.addParameter(ParameterNames.CLASS_NAME, className);
+
+			const response = await this.sdsConnection.send(request);
+			const classId = response.getParameter(ParameterNames.CLASS_ID) as number;
+			resolve(classId);
+		});
+	}
+
+	/**
 	 * Converts an error code to a error message
 	 * This message returns a human-readable string (probably in German) for a given error code.
 	 * @param errorCode The error code from a previous SDS call.
