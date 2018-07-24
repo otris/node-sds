@@ -1,6 +1,7 @@
 import { ntohl } from "../network";
 
 export enum ComOperations {
+	GET_CLASSES = 5,
 	ERROR_MESSAGE = 17,
 }
 
