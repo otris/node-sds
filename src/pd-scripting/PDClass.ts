@@ -97,4 +97,26 @@ export class PDClass extends JANUSClass {
 			}
 		});
 	}
+
+	/**
+	 * Fetches the object by its id
+	 * @param oId Id of the object
+	 * @returns The object with the passed id
+	 */
+	public ptr(oId: string): Promise<PDObject> {
+		return new Promise(async (resolve, reject) => {
+			const request = new SDSRequest();
+			request.operation = Operations.PDCLASS_PTR;
+			request.oId = oId;
+
+			const response = await this.sdsConnection.send(request);
+			if (response.oId === "0:0") {
+				// the object doesn't exists
+				reject(new Error(`The object with id '${oId}' does not exists`));
+			} else {
+				const pdObject = new PDObject(oId);
+				resolve(pdObject);
+			}
+		});
+	}
 }
