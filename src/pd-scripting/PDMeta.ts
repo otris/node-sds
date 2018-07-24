@@ -4,11 +4,15 @@ import { SDSRequest } from "../sds/SDSRequest";
 
 export class PDMeta {
 
+	/** Map with the available PDClasses and their class id */
+	private pdClassesMap: Map<string, number>;
+
 	/** The initialized sds connection */
 	private sdsConnection: SDSConnection;
 
 	constructor(sdsConnection: SDSConnection) {
 		this.sdsConnection = sdsConnection;
+		this.pdClassesMap = new Map();
 	}
 
 	/**
@@ -36,14 +40,19 @@ export class PDMeta {
 	 */
 	public getClassId(className: string): Promise<number> {
 		return new Promise(async (resolve, reject) => {
-			const request = new SDSRequest();
-			request.operation = Operations.COM_OPERATION;
-			request.addParameter(ParameterNames.INDEX, ComOperations.GET_CLASS_ID);
-			request.addParameter(ParameterNames.CLASS_NAME, className);
+			if (this.pdClassesMap.has(className)) {
+				resolve(this.pdClassesMap.get(className));
+			} else {
+				const request = new SDSRequest();
+				request.operation = Operations.COM_OPERATION;
+				request.addParameter(ParameterNames.INDEX, ComOperations.GET_CLASS_ID);
+				request.addParameter(ParameterNames.CLASS_NAME, className);
 
-			const response = await this.sdsConnection.send(request);
-			const classId = response.getParameter(ParameterNames.CLASS_ID) as number;
-			resolve(classId);
+				const response = await this.sdsConnection.send(request);
+				const classId = response.getParameter(ParameterNames.CLASS_ID) as number;
+				this.pdClassesMap.set(className, classId);
+				resolve(classId);
+			}
 		});
 	}
 
@@ -63,6 +72,25 @@ export class PDMeta {
 			const response = await this.sdsConnection.send(request);
 			const errorMessage: string = response.getParameter(ParameterNames.RETURN_VALUE) as string;
 			resolve(errorMessage);
+		});
+	}
+
+	/**
+	 * Initializes internal members. This function will be invoked by the function constructor
+	 * but it's executed asynchronously. This function bocks the sdsConnection so that no new
+	 * requests can be send until this function is finished
+	 */
+	public initialize(): Promise<void> {
+		return new Promise(async (resolve, reject) => {
+			// get all class names
+			const classNamesArray = await this.getClasses();
+			for (const className of classNamesArray) {
+				// get the id of the class and save the result to the class name map
+				const classId = await this.getClassId(className);
+				this.pdClassesMap.set(className, classId);
+			}
+
+			resolve();
 		});
 	}
 }

@@ -63,8 +63,8 @@ export class SDSConnection extends EventEmitter {
 		this.isBusy = false;
 
 		// Initialize functions
-		this.PDClass = new PDClass(this);
-		this.PDMeta = new PDMeta(this);
+		this.PDClass = null as any;
+		this.PDMeta = null as any;
 	}
 
 	/**
@@ -90,10 +90,17 @@ export class SDSConnection extends EventEmitter {
 				const request = new SDSRequest();
 				request.operation = 0; // this operation is not labeled. Take it as it is
 				request.add(Buffer.from(`${clientName} on ${os.platform()}`));
-				response = await this.send(request);
 
 				// wait for the client-ID
-				resolve(response.getParameter(ParameterNames.CLIENT_ID));
+				response = await this.send(request);
+				const clientId = response.getParameter(ParameterNames.CLIENT_ID);
+
+				// Initialize functions
+				this.PDClass = new PDClass(this);
+				this.PDMeta = new PDMeta(this);
+				await this.PDMeta.initialize();
+
+				resolve(clientId);
 			});
 
 			this.socket.on("error", (err: Error) => {
