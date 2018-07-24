@@ -223,6 +223,22 @@ export class MockedJanusServer {
 	}
 
 	/**
+	 * Sends back a response for a PDClass.newObject-request
+	 * @param request Request from the client
+	 */
+	private handlePDClassNewObject(request: SDSResponse) {
+		const response = new SDSRequest();
+		let oId2 = Math.floor(Math.random() * (999999 - 1 + 1)) + 999999;
+		if (request.getParameter(ParameterNames.IS_TRANSACTION_OBJECT) as boolean) {
+			oId2 *= -1;
+		} 
+
+		response.oId = `${request.getParameter(ParameterNames.CLASS_ID)}:${oId2}`; // Generate a object id
+		response.operation = 173;
+		this.socket.write(response.pack());
+	}
+
+	/**
 	 * Handles a request from a client
 	 * @param requestBuffer Buffer with the client request
 	 */
@@ -244,6 +260,10 @@ export class MockedJanusServer {
 			
 			case Operations.CHANGE_PRINCIPAL:
 				this.handleChangePrincipalRequest(request);
+				break;
+
+			case Operations.PDCLASS_NEWOBJECT:
+				this.handlePDClassNewObject(request);
 				break;
 
 			default:

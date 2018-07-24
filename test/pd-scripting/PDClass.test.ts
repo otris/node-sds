@@ -4,6 +4,7 @@ import * as chaiAsPromised from "chai-as-promised";
 import { SDSConnection } from "../../src/sds/SDSConnection";
 import { MockedJanusServer } from "../MockedJanusServer";
 
+/* tslint:disable:no-unused-expression */
 chai.use(chaiAsPromised);
 
 describe("Tests for the connection handler for the communication with the JANUS-server", async () => {
@@ -52,5 +53,19 @@ describe("Tests for the connection handler for the communication with the JANUS-
 		return expect(sdsConnection.PDClass.changePrincipal(principal))
 			.to.be.eventually.rejectedWith(Error)
 			.and.have.property("message").which.equals(`Unable to change principal to ${principal}: Sie sind dem gewünschten Mandanten leider nicht zugeordnet.\r\nError code: 18`);
+	});
+
+	it("should create a PDObject", async () => {
+		const pdObject = await sdsConnection.PDClass.newObject("PortalScript");
+		expect(pdObject.className).to.equal("PortalScript");
+
+		const expectedClassId = await sdsConnection.PDMeta.getClassId("PortalScript");
+		expect(pdObject.classId).to.equal(expectedClassId);
+		expect(pdObject.isTransactional).to.be.false;
+	});
+
+	it("should create a transaction object", async () => {
+		const pdObject = await sdsConnection.PDClass.newObject("AccessProfile", true);
+		expect(pdObject.isTransactional).to.be.true;
 	});
 });
