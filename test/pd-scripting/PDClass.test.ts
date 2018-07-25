@@ -3,6 +3,7 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { SDSConnection } from "../../src/sds/SDSConnection";
 import { MockedJanusServer } from "../MockedJanusServer";
+import { PDObject } from "../../src/pd-scripting/PDObject";
 
 /* tslint:disable:no-unused-expression */
 chai.use(chaiAsPromised);
@@ -67,5 +68,14 @@ describe("Tests for the connection handler for the communication with the JANUS-
 	it("should create a transaction object", async () => {
 		const pdObject = await sdsConnection.PDClass.newObject("AccessProfile", true);
 		expect(pdObject.isTransactional).to.be.true;
+	});
+
+	it("should return an object by it's id", async () => {
+		const pdObject = await sdsConnection.PDClass.ptr("123:456");
+		expect(pdObject).to.be.instanceof(PDObject);
+	});
+
+	it("should reject if trying to fetch an object by it's id which does not exist", () => {
+		return expect(sdsConnection.PDClass.ptr("456:123")).to.be.eventually.rejectedWith(Error, `The object with id '456:123' does not exists`);
 	});
 });
