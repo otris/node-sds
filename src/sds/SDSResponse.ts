@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import { ntohl } from "../network";
+import { htonl, ntohl } from "../network";
 import { SDSConnection } from "./SDSConnection";
 import { IParameterNamesTypesMap, Operations, ParameterNames, SDSMessage, Types } from "./SDSMessage";
 
@@ -54,6 +54,58 @@ export class SDSResponse extends SDSMessage {
 		} else {
 			this.parameters = new Map();
 		}
+	}
+
+	/**
+	 * Returns the object id the response belongs to
+	 * @returns The object id the response belongs to
+	 */
+	public get oId(): string {
+		if (this._oId.length < 1) {
+			// Byte 1 - 4 = Länge der Nachricht
+			// Byte 5 - 12 = OID
+			const oIdFirst = ntohl(this.buffer, 4);
+			const oIdLast = ntohl(this.buffer, 8);
+			this._oId = `${oIdFirst}:${oIdLast}`;
+		}
+
+		return this._oId;
+	}
+
+	/**
+	 * Sets the object id to operate on
+	 * @param oId ID of the PD-Object
+	 * @returns The object id to operate on
+	 */
+	public set oId(oId: string) {
+		this._oId = oId;
+
+		// note: the id will be moved to byte 5 to 13 while packaging
+		// the first four bytes represents the size of the whole message. These bytes will be set by the packaging-function
+		const splittedId = oId.split(":");
+		htonl(this.buffer, 0, parseInt(splittedId[0], 10));
+		htonl(this.buffer, 4, parseInt(splittedId[1], 10));
+	}
+
+	/**
+	 * Returns the operation which should be executed
+	 * @returns Operation which should be executed
+	 */
+	public get operation(): Operations {
+		if (this._operation < 0) {
+			this._operation = this.buffer[12];
+		}
+
+		return this._operation;
+	}
+
+	/**
+	 * Sets the operation to execute on the server side
+	 * @param operation Identifier of the operation
+	 */
+	public set operation(operation: Operations) {
+		// note: it's actually the 13th byte which will be set. The packaging function will insert 4 more bytes at the beginning
+		this.buffer[8] = this._operation = operation;
 	}
 
 	/**

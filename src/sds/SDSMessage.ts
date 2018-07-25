@@ -1,5 +1,3 @@
-import { ntohl } from "../network";
-
 export enum ComOperations {
 	GET_CLASSES = 5,
 	GET_CLASS_ID = 11,
@@ -113,29 +111,13 @@ export abstract class SDSMessage {
 	 * Returns the object id the response belongs to
 	 * @returns The object id the response belongs to
 	 */
-	public get oId(): string {
-		if (this._oId.length < 1) {
-			// Byte 1 - 4 = Länge der Nachricht
-			// Byte 5 - 12 = OID
-			const oIdFirst = ntohl(this.buffer, 4);
-			const oIdLast = ntohl(this.buffer, 8);
-			this._oId = `${oIdFirst}:${oIdLast}`;
-		}
-
-		return this._oId;
-	}
+	public abstract get oId(): string;
 
 	/**
 	 * Returns the operation which should be executed
 	 * @returns Operation which should be executed
 	 */
-	public get operation(): Operations {
-		if (this._operation < 0) {
-			this._operation = this.buffer[12];
-		}
-
-		return this._operation;
-	}
+	public abstract get operation(): Operations;
 
 	constructor(buffer?: Buffer) {
 		this._oId = "";

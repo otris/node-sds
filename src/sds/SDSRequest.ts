@@ -1,4 +1,4 @@
-import { htonl } from "../network";
+import { htonl, ntohl } from "../network";
 import { Operations, ParameterNames, SDSMessage, Types } from "./SDSMessage";
 
 /**
@@ -20,6 +20,22 @@ export class SDSRequest extends SDSMessage {
 	}
 
 	/**
+	 * Returns the object id the response belongs to
+	 * @returns The object id the response belongs to
+	 */
+	public get oId(): string {
+		if (this._oId.length < 1) {
+			// Byte 1 - 4 = Länge der Nachricht
+			// Byte 5 - 12 = OID
+			const oIdFirst = ntohl(this.buffer, 4);
+			const oIdLast = ntohl(this.buffer, 8);
+			this._oId = `${oIdFirst}:${oIdLast}`;
+		}
+
+		return this._oId;
+	}
+
+	/**
 	 * Sets the object id to operate on
 	 * @param oId ID of the PD-Object
 	 * @returns The object id to operate on
@@ -32,6 +48,27 @@ export class SDSRequest extends SDSMessage {
 		const splittedId = oId.split(":");
 		htonl(this.buffer, 0, parseInt(splittedId[0], 10));
 		htonl(this.buffer, 4, parseInt(splittedId[1], 10));
+	}
+
+	/**
+	 * Returns the operation which should be executed
+	 * @returns Operation which should be executed
+	 */
+	public get operation(): Operations {
+		if (this._operation < 0) {
+			this._operation = this.buffer[12];
+		}
+
+		return this._operation;
+	}
+
+	/**
+	 * Sets the operation to execute on the server side
+	 * @param operation Identifier of the operation
+	 */
+	public set operation(operation: Operations) {
+		// note: it's actually the 13th byte which will be set. The packaging function will insert 4 more bytes at the beginning
+		this.buffer[8] = this._operation = operation;
 	}
 
 	/**
@@ -64,15 +101,6 @@ export class SDSRequest extends SDSMessage {
 				this.bufferedLength++;
 			}
 		}
-	}
-
-	/**
-	 * Sets the operation to execute on the server side
-	 * @param operation Identifier of the operation
-	 */
-	public set operation(operation: Operations) {
-		// note: it's actually the 13th byte which will be set. The packaging function will insert 4 more bytes at the beginning
-		this.buffer[8] = this._operation = operation;
 	}
 
 	/**
