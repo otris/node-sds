@@ -1,17 +1,15 @@
 import { SDSConnection } from "../sds/SDSConnection";
 import { ComOperations, Operations, ParameterNames } from "../sds/SDSMessage";
 import { SDSRequest } from "../sds/SDSRequest";
+import { JANUSClass } from "./JANUSClass";
 
-export class PDMeta {
+export class PDMeta extends JANUSClass {
 
 	/** Map with the available PDClasses and their class id */
 	private pdClassesMap: Map<string, number>;
 
-	/** The initialized sds connection */
-	private sdsConnection: SDSConnection;
-
 	constructor(sdsConnection: SDSConnection) {
-		this.sdsConnection = sdsConnection;
+		super(sdsConnection);
 		this.pdClassesMap = new Map();
 	}
 

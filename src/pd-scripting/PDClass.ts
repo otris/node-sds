@@ -2,19 +2,17 @@ import { crypt_md5, Hash } from "../cryptmd5";
 import { SDSConnection } from "../sds/SDSConnection";
 import { Operations, ParameterNames } from "../sds/SDSMessage";
 import { SDSRequest } from "../sds/SDSRequest";
+import { JANUSClass } from "./JANUSClass";
 
 /** Id of a logged in user */
 export type UserId = number;
 
-export class PDClass {
+export class PDClass extends JANUSClass {
 	/** Salt for hashing passwords before sending them to the JANUS-server */
 	public static JANUS_CRYPTMD5_SALT: string = "o3";
 
-	/** The initialized sds connection */
-	private sdsConnection: SDSConnection;
-
 	constructor(sdsConnection: SDSConnection) {
-		this.sdsConnection = sdsConnection;
+		super(sdsConnection);
 	}
 
 	/**
@@ -32,8 +30,8 @@ export class PDClass {
 			if (result === 0) {
 				resolve();
 			} else {
-				const errorMessage = await this.sdsConnection.PDMeta.getString(result);
-				reject(new Error(`Unable to change principal to ${principal}: ${errorMessage}\r\nError code: ${result}`));
+				const errorMessage = await this.getFormattedError(`Unable to change principal to ${principal}`, result);
+				reject(new Error(errorMessage));
 			}
 		});
 	}
@@ -64,8 +62,8 @@ export class PDClass {
 				resolve(response.getParameter(ParameterNames.USER_ID));
 			} else {
 				// Error occurred. Get the error message from the server
-				const errorMessage = await this.sdsConnection.PDMeta.getString(result);
-				reject(new Error(`Change user request failed: ${errorMessage}`));
+				const errorMessage = await this.getFormattedError(`Change user request failed`, result);
+				reject(new Error(errorMessage));
 			}
 		});
 	}
