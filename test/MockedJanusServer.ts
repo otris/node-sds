@@ -6,6 +6,7 @@ import { SDSConnection } from "../src/sds/SDSConnection";
 import { ComOperations, Operations, ParameterNames } from "../src/sds/SDSMessage";
 import { SDSRequest } from "../src/sds/SDSRequest";
 import { SDSResponse } from "../src/sds/SDSResponse";
+import { TEST_PRINCIPAL, TEST_USER, TEST_USER_PASS } from "./env.test";
 
 export class MockedJanusServer {
 
@@ -133,7 +134,7 @@ export class MockedJanusServer {
 	private handleChangePrincipalRequest(request: SDSResponse) {
 		const response = new SDSRequest();
 
-		if (request.getParameter(ParameterNames.PRINCIPAL) === "test") {
+		if (request.getParameter(ParameterNames.PRINCIPAL) === TEST_PRINCIPAL) {
 			response.addParameter(ParameterNames.RETURN_VALUE, 0);
 			response.addParameter(ParameterNames.PRINCIPAL, 1);
 			response.addParameter(45, "otris software AG"); // it's the field 'carrier' of the principal, but the parameter is not labeled
@@ -145,7 +146,7 @@ export class MockedJanusServer {
 		response.operation = 173;
 		this.socket.write(response.pack());
 	}
-	
+
 	/**
 	 * Sends back a response for a change user request.
 	 * The request will be successful for the user "admin" with passwort "test123" or user "admin2" with password ""
@@ -162,22 +163,12 @@ export class MockedJanusServer {
 		responseInvalidPass.operation = 127;
 		responseInvalidPass.addParameter(ParameterNames.RETURN_VALUE, 21); // PDMeta error code
 
-		if (login === "admin") {
-			if (hashedPassword === crypt_md5("test123", PDClass.JANUS_CRYPTMD5_SALT).value) {
+		if (login === TEST_USER) {
+			if (hashedPassword === crypt_md5(TEST_USER_PASS, PDClass.JANUS_CRYPTMD5_SALT).value || hashedPassword === "") {
 				response.operation = 173; // don't know
 				response.addParameter(ParameterNames.RETURN_VALUE, 0);
 				response.addParameter(ParameterNames.USER, "Administrator");
 				response.addParameter(ParameterNames.USER_ID, 1);
-				response.addParameter(ParameterNames.PASSWORD, hashedPassword);
-			} else {
-				response = responseInvalidPass;
-			}
-		} else if (login === "admin2") {
-			if (hashedPassword === "") {
-				response.operation = 173; // don't know
-				response.addParameter(ParameterNames.RETURN_VALUE, 0);
-				response.addParameter(ParameterNames.USER, "Administrator2");
-				response.addParameter(ParameterNames.USER_ID, 2);
 				response.addParameter(ParameterNames.PASSWORD, hashedPassword);
 			} else {
 				response = responseInvalidPass;
@@ -231,7 +222,7 @@ export class MockedJanusServer {
 		let oId2 = Math.floor(Math.random() * (999999 - 1 + 1)) + 999999;
 		if (request.getParameter(ParameterNames.IS_TRANSACTION_OBJECT) as boolean) {
 			oId2 *= -1;
-		} 
+		}
 
 		response.oId = `${request.getParameter(ParameterNames.CLASS_ID)}:${oId2}`; // Generate a object id
 		response.operation = 173;

@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { Types, ParameterNames } from "../../src/sds/SDSMessage";
+import { ParameterNames, Types } from "../../src/sds/SDSMessage";
 import { SDSRequest } from "../../src/sds/SDSRequest";
 
 describe("Tests for generating sds requests", () => {

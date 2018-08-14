@@ -2,6 +2,18 @@
   "extends": [
     "tslint:recommended"
   ],
+  "linterOptions": {
+    "exclude": [
+      "src/cryptmd5.ts",
+      "src/main.ts",
+      "src/network.ts",
+      "src/sds.ts",
+      "src/testPDObject.ts",
+      "test/cryptmd5.test.ts",
+      "test/network.test.ts",
+      "test/sds.test.ts"
+    ]
+  },
   "rules": {
     "quotemark": [
       true, 
@@ -21,7 +33,8 @@
       true
     ],
     "max-line-length": [
-      120
+      true,
+      180
     ],
     "ordered-imports": [
       true,

@@ -40,6 +40,11 @@ $ npm run generate-package-lock
 and reinstall the dependencies. The package-lock file will only be generated once a new release gets published.
 Happy hacking!
 
+### Testing
+There are several tests for this API. The tests run against a mocked JANUS-server to verify that the generated SDSRequests are valid
+and the responses are correctly parsed. However, it's often necessary to run the test against a real live system. You can do this
+by changing the environment settings in the [test configuration](test/env.test.ts).
+Enter the system informations of your system in this file and run the tests. Please read the header informations inside the config file.
 
 ## About SDS
 SDS (or SDS2) is a synchronous binary application-layer protocol on top of TCP

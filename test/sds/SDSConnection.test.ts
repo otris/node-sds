@@ -2,6 +2,7 @@ import { expect } from "chai";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { SDSConnection } from "../../src/sds/SDSConnection";
+import { HOST, PORT } from "../env.test";
 import { MockedJanusServer } from "../MockedJanusServer";
 
 chai.use(chaiAsPromised);
@@ -17,19 +18,21 @@ describe("Tests for the connection handler for the communication with the JANUS-
 
 	it("should connect successfully", () => {
 		const sdsConnection = new SDSConnection();
-		return expect(sdsConnection.connect("test123", "127.0.0.1", 11001)).to.not.be.eventually.rejected;
+		return expect(sdsConnection.connect("sdsConnection.test", HOST, PORT)).to.not.be.eventually.rejected;
 	});
 
 	it("should fail to connect", () => {
 		const sdsConnection = new SDSConnection();
 
 		// on this port no server is running
-		return expect(sdsConnection.connect("test123", "127.0.0.1", 11111)).to.be.eventually.rejectedWith("Unhandled error ocurred: The TCP-connection failed: connect ECONNREFUSED 127.0.0.1:11111");
+		const invalidPort = (PORT + 10);
+		return expect(sdsConnection.connect("test123", HOST, invalidPort))
+			.to.be.eventually.rejectedWith(new RegExp(`Unhandled error ocurred: The TCP-connection failed: connect (ECONNREFUSED|ETIMEDOUT) ${HOST}:${invalidPort}`));
 	});
 
 	it("should return a client id on connect", async () => {
 		const sdsConnection = new SDSConnection();
-		const clientId: number = await sdsConnection.connect("test123", "127.0.0.1", 11001);
+		const clientId: number = await sdsConnection.connect("sdsConnection.test", HOST, PORT);
 		expect(clientId).to.be.a("number");
 	});
 });
