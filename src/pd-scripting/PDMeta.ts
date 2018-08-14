@@ -14,6 +14,24 @@ export class PDMeta extends JANUSClass {
 	}
 
 	/**
+	 * Converts an error code to a error message.
+	 * This message returns a human-readable string (probably in German) for a given error code.
+	 * @param errorCode The error code from a previous SDS call.
+	 * @returns The error message
+	 */
+	public errorMessage(errorCode: number): Promise<string> {
+		return new Promise(async (resolve, reject) => {
+			const request = new SDSRequest();
+			request.operation = Operations.COM_OPERATION;
+			request.addParameter(ParameterNames.INDEX, 17);
+			request.addParameter(ParameterNames.VALUE, errorCode);
+
+			const response = await this.sdsConnection.send(request);
+			resolve(response.getParameter(ParameterNames.RETURN_VALUE) as string);
+		});
+	}
+
+	/**
 	 * Returns a list with the name of available PDClasses of the JANUS-application
 	 * @param abstractClasses Determines if abstract classes should be returned
 	 * @returns List with the class names

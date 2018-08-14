@@ -63,7 +63,7 @@ export class PDClass extends JANUSClass {
 				resolve(response.getParameter(ParameterNames.USER_ID));
 			} else {
 				// Error occurred. Get the error message from the server
-				const errorMessage = await this.getFormattedError(`Change user request failed`, result);
+				const errorMessage = await this.getFormattedError(`Change user request failed`, result, this.sdsConnection.PDMeta.errorMessage);
 				reject(new Error(errorMessage));
 			}
 		});
@@ -92,7 +92,7 @@ export class PDClass extends JANUSClass {
 				const errorMessage = await this.getFormattedError(`Unable to create object of class '${className}'`, result);
 				reject(new Error(errorMessage));
 			} else {
-				const pdObject = new PDObject(response.oId, classId, className);
+				const pdObject = new PDObject(this.sdsConnection, response.oId, classId, className);
 				resolve(pdObject);
 			}
 		});
@@ -114,7 +114,7 @@ export class PDClass extends JANUSClass {
 				// the object doesn't exists
 				reject(new Error(`The object with id '${oId}' does not exists`));
 			} else {
-				const pdObject = new PDObject(oId);
+				const pdObject = new PDObject(this.sdsConnection, oId);
 				resolve(pdObject);
 			}
 		});
