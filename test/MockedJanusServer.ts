@@ -245,6 +245,18 @@ export class MockedJanusServer {
 		this.socket.write(response.pack());
 	}
 
+
+	/**
+	 * Sends back a response for the sync-Operation of a PDObject
+	 * @param request Request from the client
+	 */
+	private handlePdObjectSync(request: SDSResponse) {
+		const response = new SDSRequest();
+		response.oId = "0:0";
+		response.operation = 0;
+		this.socket.write(response.pack());
+	}
+
 	/**
 	 * Handles a request from a client
 	 * @param requestBuffer Buffer with the client request
@@ -275,6 +287,10 @@ export class MockedJanusServer {
 
 			case Operations.PDCLASS_PTR:
 				this.handlePDClassPtr(request);
+				break;
+
+			case Operations.PDOBJECT_SYNC:
+				this.handlePdObjectSync(request);
 				break;
 
 			default:
