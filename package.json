@@ -19,6 +19,7 @@
     "compile": "tsc -p ./",
     "doc": "typedoc --out doc src",
     "generate-package-lock": "node -e \"var fs = require('fs'); if (fs.existsSync('package-lock.json')) fs.unlinkSync('package-lock.json')\" && synp --source-file yarn.lock",
+    "generate-todo": "leasot -x --reporter markdown src/**/*.ts test/**/*.ts > TODO.md",
     "lint": "tslint -c ./tslint.json -p test/tsconfig.json",
     "prepublish": "npm run generate-package-lock",
     "test": "tsc -p ./ && tsc -p ./test && mocha --timeout 10000 -u tdd out/test/"
@@ -39,6 +40,7 @@
     "typescript": "^2.3.3"
   },
   "dependencies": {
+    "leasot": "^6.3.0",
     "promise.prototype.finally": "^3.1.0",
     "promised-timeout": "^0.3.3"
   }
