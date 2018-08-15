@@ -1,15 +1,4 @@
-'use strict';
-
-/**
- * Something that behaves like a bloody Node socket.
- */
-export interface SocketLike {
-    // tslint:disable-next-line:ban-types
-    on(event: string, listener: Function): this;
-    write(buffer: Buffer): boolean;
-    write(str: string, encoding: string): boolean;
-    end(): void;
-}
+"use strict";
 
 /**
  * Convert a 32-bit quantity (long integer) from host byte order to network byte order (little- to big-endian).
@@ -19,10 +8,10 @@ export interface SocketLike {
  * @param {number} v Value to convert
  */
 export function htonl(b: Buffer, i: number, val: number): void {
-    b[i + 0] = (0xff & (val >> 24));
-    b[i + 1] = (0xff & (val >> 16));
-    b[i + 2] = (0xff & (val >>  8));
-    b[i + 3] = (0xff & (val));
+	b[i + 0] = (0xff & (val >> 24));
+	b[i + 1] = (0xff & (val >> 16));
+	b[i + 2] = (0xff & (val >>  8));
+	b[i + 3] = (0xff & (val));
 }
 
 /**
@@ -32,8 +21,8 @@ export function htonl(b: Buffer, i: number, val: number): void {
  * @param {number} i Zero-based index at which to read from b
  */
 export function ntohl(b: Buffer, i: number): number {
-    return ((0xff & b[i + 0]) << 24) |
-           ((0xff & b[i + 1]) << 16) |
-           ((0xff & b[i + 2]) <<  8) |
-           ((0xff & b[i + 3]));
+	return ((0xff & b[i + 0]) << 24) |
+			((0xff & b[i + 1]) << 16) |
+			((0xff & b[i + 2]) <<  8) |
+			((0xff & b[i + 3]));
 }
