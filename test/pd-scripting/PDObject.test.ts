@@ -26,5 +26,21 @@ describe("Tests for the connection handler for the communication with the JANUS-
 		const pdObject = await sdsConnection.PDClass.newObject("PortalScript");
 		return expect(pdObject.sync()).to.not.be.eventually.rejected;
 	});
-});
 
+	it("should set and get the attribute value of an object", async () => {
+		const pdObject = await sdsConnection.PDClass.newObject("PortalScript");
+		await pdObject.setAttribute("Name", "1234");
+		await pdObject.sync();
+
+		// ensure that the attribute was set successfully
+		return expect(pdObject.getAttribute("Name"))
+			.to.eventually.equals(`1234`);
+	});
+
+	it("should fail when trying to set an unknown attribute", async () => {
+		const pdObject = await sdsConnection.PDClass.newObject("PortalScript");
+		return expect(pdObject.setAttribute("notExistingAttribute", "1234"))
+			.to.be.eventually.rejectedWith(Error)
+			.and.have.property("message").which.matches(/Can't set attribute 'notExistingAttribute' to '1234'/);
+	});
+});

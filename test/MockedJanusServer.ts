@@ -6,7 +6,9 @@ import { SDSConnection } from "../src/sds/SDSConnection";
 import { ComOperations, Operations, ParameterNames } from "../src/sds/SDSMessage";
 import { SDSRequest } from "../src/sds/SDSRequest";
 import { SDSResponse } from "../src/sds/SDSResponse";
+import { SDSSimpleMessage } from "../src/sds/SDSSimpleMessage";
 import { TEST_PRINCIPAL, TEST_USER, TEST_USER_PASS } from "./env.test";
+import { MockedPDObject } from "./MockedPDObject";
 
 export class MockedJanusServer {
 
@@ -21,6 +23,9 @@ export class MockedJanusServer {
 
 	private pdMetaErrorMessagesMap: Map<number, string>;
 
+	/** Map with the PDObjects of the server */
+	private pdObjectsMap: Map<string, MockedPDObject>;
+
 	/** Server socket */
 	private server: Server;
 
@@ -33,12 +38,14 @@ export class MockedJanusServer {
 		this.messageSize = 0;
 		this.server = null as any;
 		this.socket = null as any;
+		this.pdObjectsMap = new Map();
 
 		// Fill the PDMeta error messages
 		this.pdMetaErrorMessagesMap = new Map([
 			[16, `Login-Name, Mandant oder Passwort für "%v" nicht korrekt.`],
 			[18, `Sie sind dem gewünschten Mandanten leider nicht zugeordnet.`],
 			[21, `Login-Name oder Passwort für "%v" nicht korrekt.`],
+			[268544, ``],
 		]);
 	}
 
@@ -224,7 +231,9 @@ export class MockedJanusServer {
 			oId2 *= -1;
 		}
 
-		response.oId = `${request.getParameter(ParameterNames.CLASS_ID)}:${oId2}`; // Generate a object id
+		const classId = request.getParameter(ParameterNames.CLASS_ID);
+		response.oId = `${classId}:${oId2}`; // Generate a object id
+		this.pdObjectsMap.set(response.oId, new MockedPDObject(response.oId, classId));
 		response.operation = 173;
 		this.socket.write(response.pack());
 	}
@@ -235,8 +244,9 @@ export class MockedJanusServer {
 	 */
 	private handlePDClassPtr(request: SDSResponse) {
 		const response = new SDSRequest();
-		if (request.oId === "123:456") {
-			response.oId = "123:456";
+		if (this.pdObjectsMap.has(request.oId)) {
+			// it's enough to return the object id. The response usually has more parameters, but we will not add them now
+			response.oId = request.oId;
 		} else {
 			response.oId = "0:0";
 		}
@@ -245,6 +255,53 @@ export class MockedJanusServer {
 		this.socket.write(response.pack());
 	}
 
+	/**
+	 * Sends back a response for the getAttribute-Operation of the class PDObject
+	 * @param request Request from the client
+	 */
+	private handlePDObjectGetAttribute(request: SDSResponse) {
+		if (this.pdObjectsMap.has(request.oId)) {
+			const response = new SDSRequest();
+			response.oId = request.oId;
+			response.operation = 0;
+
+			const pdObject = this.pdObjectsMap.get(request.oId) as MockedPDObject;
+			response.addParameter(ParameterNames.RETURN_VALUE, 0); // @todo: clear how to indicate success or failure
+
+			const attributeName = request.getParameter(ParameterNames.CLASS_NAME) as string;
+			const attributeValue = pdObject.attributes.get(attributeName) || attributeName; // the server returns the name of the requested attribute if the attribute does not exist
+			response.addParameter(ParameterNames.VALUE, attributeValue);
+			this.socket.write(response.pack());
+		} else {
+			throw new Error(`The object with id ${request.oId} doesn't exist`);
+		}
+	}
+
+	/**
+	 * Sends back a response for the setAttribute-Operation of the class PDObject
+	 * @param request Request from the client
+	 */
+	private handlePDObjectSetAttribute(request: SDSResponse) {
+		if (this.pdObjectsMap.has(request.oId)) {
+			const pdObject = this.pdObjectsMap.get(request.oId) as MockedPDObject;
+			const attributeName = request.getParameter(ParameterNames.CLASS_NAME);
+
+			const response = new SDSSimpleMessage();
+			if (attributeName === "notExistingAttribute") {
+				response.result = 268544; // extracted from the response of the live message
+			} else {
+				response.result = 0;
+				pdObject.attributes.set(
+					attributeName,
+					request.getParameter(ParameterNames.VALUE) as string,
+				);
+			}
+
+			this.socket.write(response.pack());
+		} else {
+			throw new Error(`The object with id '${request.oId}' doesn't exist`);
+		}
+	}
 
 	/**
 	 * Sends back a response for the sync-Operation of a PDObject
@@ -268,33 +325,47 @@ export class MockedJanusServer {
 		const request = new SDSResponse(requestBuffer);
 
 		// Handle the request and send a response
-		switch (request.operation) {
-			case Operations.CHANGE_USER:
-				this.handleChangeUserRequest(request);
-				break;
+		try {
+			switch (request.operation) {
+				case Operations.CHANGE_USER:
+					this.handleChangeUserRequest(request);
+					break;
 
-			case Operations.COM_OPERATION:
-				this.handleComOperationRequest(request);
-				break;
-			
-			case Operations.CHANGE_PRINCIPAL:
-				this.handleChangePrincipalRequest(request);
-				break;
+				case Operations.COM_OPERATION:
+					this.handleComOperationRequest(request);
+					break;
 
-			case Operations.PDCLASS_NEWOBJECT:
-				this.handlePDClassNewObject(request);
-				break;
+				case Operations.CHANGE_PRINCIPAL:
+					this.handleChangePrincipalRequest(request);
+					break;
 
-			case Operations.PDCLASS_PTR:
-				this.handlePDClassPtr(request);
-				break;
+				case Operations.PDCLASS_NEWOBJECT:
+					this.handlePDClassNewObject(request);
+					break;
 
-			case Operations.PDOBJECT_SYNC:
-				this.handlePdObjectSync(request);
-				break;
+				case Operations.PDCLASS_PTR:
+					this.handlePDClassPtr(request);
+					break;
 
-			default:
-				throw new Error(`Unknown operation: ${request.operation}`);
+				case Operations.PDOBJECT_SETATTRIBUTE:
+					this.handlePDObjectSetAttribute(request);
+					break;
+
+				case Operations.PDOBJECT_GETATTRIBUTE:
+					this.handlePDObjectGetAttribute(request);
+					break;
+
+				case Operations.PDOBJECT_SYNC:
+					this.handlePdObjectSync(request);
+					break;
+
+				default:
+					// Unsupported operation
+					throw new Error(`Unknown operation: ${request.operation}`);
+				}
+		} catch (err) {
+			console.error(err);
+			this.socket.write(SDSConnection.INVALID);
 		}
 
 	}
