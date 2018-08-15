@@ -139,7 +139,12 @@ export class SDSResponse extends SDSMessage {
 	}
 
 	public toString(): string {
-		let out = `${JSON.stringify(this.buffer)}\r\n\r\nBuffered length: ${this.bufferedLength}\r\nOId: ${this.oId}\r\nOperation: ${this.operation}\r\nParameters (${this.parameters.size})`;
+		let out = `${JSON.stringify(this.buffer)}\r\n
+Buffered length: ${this.bufferedLength}
+OId: ${this.oId}
+Operation: ${this.operation}
+Parameters (${this.parameters.size})`;
+
 		if (this.parameters.size > 0) {
 			out += ":";
 			for (const [key, value] of this.parameters) {
