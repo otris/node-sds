@@ -15,6 +15,15 @@
     // Enable TSLint extension
     "tslint.enable": true,
     "cSpell.words": [
-        "ggch"
+        "getattribute",
+        "getstring",
+        "ggch",
+        "itoa",
+        "libcrypt",
+        "newobject",
+        "pdclass",
+        "pdmeta",
+        "pdobject",
+        "poul"
     ]
 }

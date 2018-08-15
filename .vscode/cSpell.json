@@ -8,11 +8,20 @@
     "words": [
         "ack'ed",
         "cryptmd",
+        "getattribute",
+        "getstring",
         "ggch",
         "htonl",
+        "itoa",
+        "libcrypt",
+        "newobject",
         "ntohl",
         "or'ed",
         "Passwort",
+        "pdclass",
+        "pdmeta",
+        "pdobject",
+        "poul",
         "srvclnt"
     ],
     // flagWords - list of words to be always considered incorrect
