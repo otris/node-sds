@@ -118,7 +118,7 @@ export class SDSResponse extends SDSMessage {
 		if (responseParameter) {
 			return responseParameter.value;
 		} else {
-			throw new Error(`Unknown paramter ${parameterName}`);
+			throw new Error(`Unknown paramter: ${parameterName}.\r\nParameters: ${JSON.stringify([...this.parameters.keys()])}`);
 		}
 	}
 
