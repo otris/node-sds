@@ -1,6 +1,39 @@
+import { createHash } from "crypto";
+import { existsSync, readFileSync } from "fs";
 import { EOL } from "os";
 import { extname, join } from "path";
 import { exec } from "shelljs";
+
+/**
+ * Generates the TODO list from code comments
+ * @param stagedFiles Files to lint
+ * @throws Error if the TODO list was changed
+ */
+function generateTODO(stagedFiles: string[]) {
+	console.log("Generate TODO list");
+	const todoPath = join(process.cwd(), "TODO.md");
+	let currentTODO = "";
+	if (existsSync(todoPath)) {
+		currentTODO = readFileSync(todoPath, "utf-8").toString();
+	}
+
+	// hash the current TODO list
+	const hashedTODO = createHash("md5").update(currentTODO).digest("hex");
+
+	// regenerate the TODO
+	exec("npm run generate-todo", { silent: true });
+	let newTODO = "";
+	if (existsSync(todoPath)) {
+		newTODO = readFileSync(todoPath, "utf-8").toString();
+	}
+
+	// hash the new TODO list
+	const newTODOHash = createHash("md5").update(newTODO).digest("hex");
+
+	if (newTODOHash !== hashedTODO) {
+		throw new Error("The TODO list has changed. Add the TODO list to the changed files, fix the new TODO or remove the comments from the code");
+	}
+}
 
 /**
  * Determines all staged files
@@ -54,7 +87,8 @@ try {
 	const stagedFiles = getStagedFiles();
 
 	lintFiles(stagedFiles);
+	generateTODO(stagedFiles);
 } catch (err) {
-	console.error(`err.message${EOL.repeat(2)}`);
+	console.error(`${err.message}${EOL.repeat(2)}`);
 	process.exit(1);
 }
