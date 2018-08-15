@@ -1,3 +1,5 @@
+import { ntohl } from "../network";
+
 export enum ComOperations {
 	GET_CLASSES = 5,
 	GET_CLASS_ID = 11,
@@ -39,7 +41,8 @@ export interface IParameterNamesTypesMap {
 export enum Operations {
 	CHANGE_PRINCIPAL = 203,
 	CHANGE_USER = 27,
-
+	PDOBJECT_SETATTRIBUTE = 32,
+	PDOBJECT_GETATTRIBUTE = 33,
 	PDOBJECT_SYNC = 62,
 	PDCLASS_PTR = 53,
 	PDCLASS_NEWOBJECT = 63,
@@ -157,13 +160,5 @@ export abstract class SDSMessage {
 
 	public toString(): string {
 		return `${JSON.stringify(this.buffer)}\r\n\r\nBuffered length: ${this.bufferedLength}\r\nOId: ${this.oId}\r\nOperation: ${this.operation}`;
-	}
-
-	/**
-	 * Determines if the request/response is a "simple message"
-	 * @returns true if it's a simple message, otherwise false
-	 */
-	protected isSimple(): boolean {
-		return this.buffer.length === 8;
 	}
 }

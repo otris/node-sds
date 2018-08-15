@@ -1,5 +1,5 @@
 import { SDSConnection } from "../sds/SDSConnection";
-import { Operations } from "../sds/SDSMessage";
+import { Operations, ParameterNames } from "../sds/SDSMessage";
 import { SDSRequest } from "../sds/SDSRequest";
 import { JANUSClass } from "./JANUSClass";
 
@@ -36,6 +36,55 @@ export class PDObject extends JANUSClass {
 	/** Indicates if an object is a transaction object or not */
 	public get isTransactional(): boolean {
 		return this._isTransactional;
+	}
+
+	/**
+	 * Returns the value of an attribute
+	 * @param attributeName Name of the attribute
+	 * @returns Value of the attribute
+	 */
+	public getAttribute(attributeName: string): Promise<string> {
+		return new Promise(async (resolve, reject) => {
+			const request = new SDSRequest();
+			request.oId = this.oId;
+			request.operation = Operations.PDOBJECT_GETATTRIBUTE;
+			request.addParameter(ParameterNames.CLASS_NAME, attributeName);
+
+			const response = await this.sdsConnection.send(request);
+
+			// @todo: The return value represent some flags which gives us informations about the success of this operation
+			//        but I don't know how to evaluate these flags
+			const result = response.getParameter(ParameterNames.RETURN_VALUE) as number;
+
+			const attributeValue = response.getParameter(ParameterNames.VALUE) as string;
+			resolve(attributeValue);
+		});
+	}
+
+	/**
+	 * Sets the value of an attribute
+	 * @param attributeName Name of the attribute
+	 * @param attributeValue Value of the attribute
+	 * @throws Error if the attribute could not be set
+	 */
+	public setAttribute(attributeName: string, attributeValue: string): Promise<void> {
+		return new Promise(async (resolve, reject) => {
+			const request = new SDSRequest();
+			request.oId = this.oId;
+			request.operation = Operations.PDOBJECT_SETATTRIBUTE;
+			request.addParameter(ParameterNames.CLASS_NAME, attributeName);
+			request.addParameter(ParameterNames.VALUE, attributeValue);
+
+			const response = await this.sdsConnection.sendSimple(request);
+			if (response.result === 0) {
+				resolve();
+			} else {
+				// see dissertation Niemann, p. 234, Tab. 1.1-5
+				const errorMessageOperation = (response.result < 0) ? this.sdsConnection.PDMeta.getString : this.sdsConnection.PDMeta.errorMessage;
+				const errorMessage = await this.getFormattedError(`Can't set attribute '${attributeName}' to '${attributeValue}'`, response.result, errorMessageOperation);
+				reject(new Error(errorMessage));
+			}
+		});
 	}
 
 	/**

@@ -9,6 +9,7 @@ import { PDMeta } from "../pd-scripting/PDMeta";
 import { ParameterNames, SDSMessage } from "./SDSMessage";
 import { SDSRequest } from "./SDSRequest";
 import { SDSResponse } from "./SDSResponse";
+import { SDSSimpleMessage } from "./SDSSimpleMessage";
 
 // make Promise.finally available
 promisePrototypeFinally.shim();
@@ -130,52 +131,26 @@ export class SDSConnection extends EventEmitter {
 	 * @param waitForResponse when send() is called from disconnect(), we shouldn't wait for a response because
 	 *                        we won't get one. When setting this variable to false, we can avoid the timeout error.
 	 */
-	public async send(request: SDSRequest | Buffer, waitForResponse: boolean = true): Promise<SDSResponse> {
-		if (!this.isConnected) {
-			throw new Error("The client is not connected");
-		}
+	public send(request: SDSRequest | Buffer, waitForResponse: boolean = true): Promise<SDSResponse> {
+		// wait until the parser emits a "response"-event
+		const response: Promise<SDSResponse> = new Promise((resolve) => {
+			this.once("response", resolve);
+		});
+		return this.sendRequest(request, response, waitForResponse);
+	}
 
-		// Wait with the next request as long as the current request is active
-		while (this.isBusy) {
-			await this.sleep(500);
-		}
-
-		// if send is called by disconnect(), the server sends no response,
-		// so call send without waiting for response to avoid the timeout error
-		if (!waitForResponse) {
-			return new Promise<SDSResponse>((resolve) => {
-				if (request instanceof SDSRequest) {
-					this.socket.write(request.pack());
-				} else {
-					this.socket.write(request);
-				}
-
-				// @todo: Create a qualified "disconnect" response
-				resolve();
-			});
-		} else {
-			// add the current request to the queue to prevent sending requests parallel
-			this.isBusy = true;
-
-			// normal case: call send with timeout
-			const ms = 6000;
-			const response: Promise<SDSResponse> = this.waitForResponse();
-			if (request instanceof SDSRequest) {
-				this.socket.write(request.pack());
-			} else {
-				this.socket.write(request);
-			}
-
-			// clear timeouts if response finishes in time
-			// see motivation of npm promised-timeout
-			return timeout({
-				error: new Error(`Request timed out (after ${ms} ms)`),
-				promise: response,
-				time: ms,
-			}).finally(() => {
-				this.isBusy = false;
-			});
-		}
+	/**
+	 * Send the given message and waits for the response of the server
+	 *
+	 * @param request The SDS-Request or a buffer to send. Note: If you pass a buffer, the buffer won't be packed or edited.
+	 * @returns A simple message object
+	 */
+	public sendSimple(request: SDSRequest): Promise<SDSSimpleMessage> {
+		// wait until the parser emits a "simple-response"-event
+		const response: Promise<SDSSimpleMessage> = new Promise((resolve) => {
+			this.once("simple-response", resolve);
+		});
+		return this.sendRequest(request, response, true);
 	}
 
 	/**
@@ -214,9 +189,13 @@ export class SDSConnection extends EventEmitter {
 
 			if (this.bufferedMessageBytes === this.messageSize) {
 				// We received the message completely. Handle it
-				const response = new SDSResponse(this.message.slice(0, this.messageSize));
-				// console.log(`Received response ${response}`);
-				this.emit("response", response);
+				const responseBuffer = this.message.slice(0, this.messageSize);
+
+				if (responseBuffer.length === 8) {
+					this.emit("simple-response", new SDSSimpleMessage(responseBuffer));
+				} else {
+					this.emit("response", new SDSResponse(responseBuffer));
+				}
 
 				// Reset the message variables
 				this.messageSize = this.bufferedMessageBytes = 0;
@@ -226,19 +205,66 @@ export class SDSConnection extends EventEmitter {
 	}
 
 	/**
+	 * Send given message on the wire and immediately return a promise that is fulfilled whenever the response
+	 * comes in or the timeout is reached.
+	 *
+	 * @param request The SDS-Request or a buffer to send. Note: If you pass a buffer, the buffer won't be packed or edited.
+	 * @param waitForResponse when send() is called from disconnect(), we shouldn't wait for a response because
+	 *                        we won't get one. When setting this variable to false, we can avoid the timeout error.
+	 */
+	private async sendRequest<T extends SDSResponse | SDSSimpleMessage>(
+		request: SDSRequest | Buffer, requestPromise: Promise<T> | Promise<SDSSimpleMessage>, waitForResponse: boolean = true): Promise<T> {
+		if (!this.isConnected) {
+			throw new Error("The client is not connected");
+		}
+
+		// Wait with the next request as long as the current request is active
+		while (this.isBusy) {
+			await this.sleep(500);
+		}
+
+		// if send is called by disconnect(), the server sends no response,
+		// so call send without waiting for response to avoid the timeout error
+		if (!waitForResponse) {
+			return new Promise<T>((resolve) => {
+				if (request instanceof SDSRequest) {
+					this.socket.write(request.pack());
+				} else {
+					this.socket.write(request);
+				}
+
+				// @todo: Create a qualified "disconnect" response
+				resolve();
+			});
+		} else {
+			// add the current request to the queue to prevent sending requests parallel
+			this.isBusy = true;
+
+			// normal case: call send with timeout
+			const ms = 6000;
+			if (request instanceof SDSRequest) {
+				this.socket.write(request.pack());
+			} else {
+				this.socket.write(request);
+			}
+
+			// clear timeouts if response finishes in time
+			// see motivation of npm promised-timeout
+			return timeout({
+				error: new Error(`Request timed out (after ${ms} ms)`),
+				promise: requestPromise,
+				time: ms,
+			}).finally(() => {
+				this.isBusy = false;
+			});
+		}
+	}
+
+	/**
 	 * Sleeps for a given time
 	 * @param ms Time in milliseconds
 	 */
 	private sleep(ms: number) {
 		return new Promise( (resolve) => setTimeout(resolve, ms) );
-	}
-
-	/**
-	 * Make a new promise that is resolved once a 'response' event is triggered.
-	 */
-	private waitForResponse(): Promise<SDSResponse> {
-		return new Promise((resolve) => {
-			this.once("response", resolve);
-		});
 	}
 }
