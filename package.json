@@ -15,12 +15,13 @@
     "Maximilian Wehrstedt <wehrstedt@otris.de>"
   ],
   "scripts": {
-    "beautify": "yarn run lint -- --fix",
+    "beautify": "npm run lint -- --fix",
     "compile": "tsc -p ./",
     "doc": "typedoc --out doc src",
     "generate-package-lock": "node -e \"var fs = require('fs'); if (fs.existsSync('package-lock.json')) fs.unlinkSync('package-lock.json')\" && synp --source-file yarn.lock",
     "generate-todo": "leasot -x --reporter markdown src/**/*.ts test/**/*.ts > TODO.md",
     "lint": "tslint -c ./tslint.json -p test/tsconfig.json",
+    "precommit": "ts-node scripts/precommit.ts",
     "prepublish": "npm run generate-package-lock",
     "test": "tsc -p ./ && tsc -p ./test && mocha --timeout 10000 -u tdd out/test/"
   },
@@ -32,7 +33,9 @@
     "@types/promise.prototype.finally": "^2.0.2",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
+    "husky": "^0.14.3",
     "mocha": "^2.4.5",
+    "shelljs": "^0.8.2",
     "synp": "^1.3.0",
     "ts-node": "^7.0.0",
     "tslint": "^5.11.0",
