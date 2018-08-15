@@ -1,8 +1,6 @@
 {
     "extends": "../tsconfig",
-    "files": [
-        "cryptmd5.test.ts",
-        "network.test.ts",
-        "sds.test.ts"
+    "include": [
+        "**/*.ts"
     ]
 }
