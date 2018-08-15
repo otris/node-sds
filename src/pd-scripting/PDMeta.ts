@@ -23,7 +23,7 @@ export class PDMeta extends JANUSClass {
 		return new Promise(async (resolve, reject) => {
 			const request = new SDSRequest();
 			request.operation = Operations.COM_OPERATION;
-			request.addParameter(ParameterNames.INDEX, 17);
+			request.addParameter(ParameterNames.INDEX, ComOperations.ERROR_MESSAGE);
 			request.addParameter(ParameterNames.VALUE, errorCode);
 
 			const response = await this.sdsConnection.send(request);
@@ -81,8 +81,7 @@ export class PDMeta extends JANUSClass {
 	public getString(errorCode: number): Promise<string> {
 		return new Promise(async (resolve, reject) => {
 			const request = new SDSRequest();
-			request.operation = Operations.COM_OPERATION;
-			request.addParameter(ParameterNames.INDEX, ComOperations.ERROR_MESSAGE);
+			request.operation = Operations.PDMETA_GETSTRING;
 			request.addParameter(ParameterNames.VALUE, errorCode);
 
 			const response = await this.sdsConnection.send(request);
