@@ -41,13 +41,17 @@ describe("Tests for the PDClass-library of the JANUS-application", async () => {
 	it("should reject the changeUser-request because the user doesn't exists", () => {
 		return expect(sdsConnection.PDClass.changeUser(TEST_USER.split("").reverse().join(""), TEST_USER_PASS))
 			.to.be.eventually.rejectedWith(Error)
-			.and.have.property("message").which.matches(/Login-Name, Mandant oder Passwort für "%v" nicht korrekt/);
+			.and.have.property("message")
+			.which.matches(/Change user request failed/)
+			.and.matches(/Error code: 16/);
 	});
 
 	it("should reject the changeUser-request because the password is wrong", () => {
 		return expect(sdsConnection.PDClass.changeUser(TEST_USER, `${TEST_USER_PASS}random`))
 			.to.be.eventually.rejectedWith(Error)
-			.and.have.property("message").which.matches(/Login-Name oder Passwort für "%v" nicht korrekt/);
+			.and.have.property("message")
+			.which.matches(/Change user request failed/)
+			.and.matches(/Error code: 21/);
 	});
 
 	it("should change the principal successfully", () => {
@@ -58,7 +62,9 @@ describe("Tests for the PDClass-library of the JANUS-application", async () => {
 		const principal = "notExisting";
 		return expect(sdsConnection.PDClass.changePrincipal(principal))
 			.to.be.eventually.rejectedWith(Error)
-			.and.have.property("message").which.matches(/Sie sind dem gewünschten Mandanten leider nicht zugeordnet/);
+			.and.have.property("message")
+			.which.matches(new RegExp(`Unable to change principal to '${principal}'`))
+			.and.matches(new RegExp("Error code: 18"));
 	});
 
 	it("should create a PDObject", async () => {

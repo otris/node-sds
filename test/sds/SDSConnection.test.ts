@@ -27,7 +27,9 @@ describe("Tests for the connection handler for the communication with the JANUS-
 		// on this port no server is running
 		const invalidPort = (PORT + 10);
 		return expect(sdsConnection.connect("test123", HOST, invalidPort))
-			.to.be.eventually.rejectedWith(new RegExp(`Unhandled error ocurred: The TCP-connection failed: connect (ECONNREFUSED|ETIMEDOUT) ${HOST}:${invalidPort}`));
+			.to.be.eventually.rejectedWith(Error)
+			.and.have.property("message")
+			.which.matches(new RegExp(`Unhandled error ocurred: The TCP-connection failed: connect (ECONNREFUSED|ETIMEDOUT) ${HOST}:${invalidPort}`));
 	});
 
 	it("should return a client id on connect", async () => {

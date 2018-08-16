@@ -22,15 +22,19 @@ describe("Tests for the PDMeta-class", () => {
 		await sdsConnection.PDClass.changePrincipal(TEST_PRINCIPAL);
 	});
 
-	it("should return an error message for some given error codes", () => {
+	// this test cannot be executed against a live system because we didn't know the returned
+	// error messages
+	(isLiveMode()) ? it.skip : it("should return an error message for some given error codes", () => {
 		// Simply test if the request is valid with one error code
 		return expect(sdsConnection.PDMeta.getString(16))
-			.to.eventually.equals(`Login-Name, Mandant oder Passwort für "%v" nicht korrekt.`);
+			.to.eventually.equals(`<random>`);
 	});
 
-	(isLiveMode()) ? it.skip : it("should return a list of available classes of the JANUS-application", () => {
-		// this test fails on a live system because there are a lot more classes
-		return expect(sdsConnection.PDMeta.getClasses()).to.eventually.eql(["AccessProfile", "DlcAction", "Fellow"]);
+	it("should return a list of available classes of the JANUS-application", () => {
+		return expect(sdsConnection.PDMeta.getClasses()).to.eventually
+			.include("AccessProfile")
+			.include("DlcAction")
+			.include("Fellow");
 	});
 
 	it("should return the id as a number of the passed JANUS-class", () => {

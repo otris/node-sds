@@ -31,7 +31,7 @@ export class PDClass extends JANUSClass {
 			if (result === 0) {
 				resolve();
 			} else {
-				const errorMessage = await this.getFormattedError(`Unable to change principal to ${principal}`, result);
+				const errorMessage = await this.getFormattedError(`Unable to change principal to '${principal}'`, result);
 				reject(new Error(errorMessage));
 			}
 		});
