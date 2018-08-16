@@ -16,7 +16,7 @@ promisePrototypeFinally.shim();
 
 declare type RequestQueueElement = Buffer | SDSRequest;
 
-export class SDSConnection extends EventEmitter {
+export class SDSConnection {
 
 	/** Acknowledgment message */
 	public static ACK: Buffer = Buffer.from(SDSMessage.term_utf8("valid"));
@@ -38,6 +38,9 @@ export class SDSConnection extends EventEmitter {
 	/** Buffered bytes of the message */
 	private bufferedMessageBytes: number;
 
+	/** EventEmitter to handle requests and responses between the client and the server */
+	private emitter: EventEmitter;
+
 	/** Indicates whether a request is currently in process */
 	private isBusy: boolean;
 
@@ -54,8 +57,7 @@ export class SDSConnection extends EventEmitter {
 	private socket: Socket;
 
 	constructor() {
-		super();
-
+		this.emitter = new EventEmitter();
 		this.message = Buffer.alloc(4096);
 		this.bufferedMessageBytes = 0;
 		this.messageSize = 0;
@@ -151,7 +153,7 @@ export class SDSConnection extends EventEmitter {
 	public send(request: SDSRequest | Buffer, waitForResponse: boolean = true): Promise<SDSResponse> {
 		// wait until the parser emits a "response"-event
 		const response: Promise<SDSResponse> = new Promise((resolve) => {
-			this.once("response", resolve);
+			this.emitter.once("response", resolve);
 		});
 		return this.sendRequest(request, response, waitForResponse);
 	}
@@ -165,7 +167,7 @@ export class SDSConnection extends EventEmitter {
 	public sendSimple(request: SDSRequest): Promise<SDSSimpleMessage> {
 		// wait until the parser emits a "simple-response"-event
 		const response: Promise<SDSSimpleMessage> = new Promise((resolve) => {
-			this.once("simple-response", resolve);
+			this.emitter.once("simple-response", resolve);
 		});
 		return this.sendRequest(request, response, true);
 	}
@@ -194,7 +196,7 @@ export class SDSConnection extends EventEmitter {
 		if (data.equals(SDSConnection.INVALID)) {
 			throw new Error("Request was invalid");
 		} else if (data.equals(SDSConnection.ACK)) {
-			this.emit("response", new SDSResponse(data, false));
+			this.emitter.emit("response", new SDSResponse(data, false));
 		} else {
 			if (this.messageSize === 0) {
 				// We got a new message, check the size and wait until we received the message completely
@@ -209,9 +211,9 @@ export class SDSConnection extends EventEmitter {
 				const responseBuffer = this.message.slice(0, this.messageSize);
 
 				if (responseBuffer.length === 8) {
-					this.emit("simple-response", new SDSSimpleMessage(responseBuffer));
+					this.emitter.emit("simple-response", new SDSSimpleMessage(responseBuffer));
 				} else {
-					this.emit("response", new SDSResponse(responseBuffer));
+					this.emitter.emit("response", new SDSResponse(responseBuffer));
 				}
 
 				// Reset the message variables
