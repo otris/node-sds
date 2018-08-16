@@ -35,4 +35,8 @@ describe("Tests for the connection handler for the communication with the JANUS-
 		const clientId: number = await sdsConnection.connect("sdsConnection.test", HOST, PORT);
 		expect(clientId).to.be.a("number");
 	});
+
+	after(() => {
+		mockedJANUSServer.close();
+	});
 });

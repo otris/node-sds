@@ -50,6 +50,19 @@ export class MockedJanusServer {
 	}
 
 	/**
+	 * Stops the mocked server
+	 */
+	public close() {
+		if (this.server) {
+			this.server.close();
+		}
+
+		if (this.socket) {
+			this.socket.destroy();
+		}
+	}
+
+	/**
 	 * Initializes a local tcp socket
 	 * @param port Port the server should listen on
 	 * @returns this-reference (for chained calls)

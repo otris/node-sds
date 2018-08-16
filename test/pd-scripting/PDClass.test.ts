@@ -86,4 +86,9 @@ describe("Tests for the PDClass-library of the JANUS-application", async () => {
 		return expect(sdsConnection.PDClass.ptr("456:123"))
 			.to.be.eventually.rejectedWith(Error, `The object with id '456:123' does not exists`);
 	});
+
+	after(() => {
+		sdsConnection.disconnect();
+		mockedJANUSServer.close();
+	});
 });

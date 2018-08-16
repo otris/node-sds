@@ -43,4 +43,9 @@ describe("Tests for PDObject specific operations", () => {
 			.to.be.eventually.rejectedWith(Error)
 			.and.have.property("message").which.matches(/Can't set attribute 'notExistingAttribute' to '1234'/);
 	});
+
+	after(() => {
+		sdsConnection.disconnect();
+		mockedJANUSServer.close();
+	});
 });

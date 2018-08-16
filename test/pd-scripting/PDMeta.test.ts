@@ -36,4 +36,9 @@ describe("Tests for the PDMeta-class", () => {
 	it("should return the id as a number of the passed JANUS-class", () => {
 		return expect(sdsConnection.PDMeta.getClassId("AccessProfile")).to.eventually.be.a("number");
 	});
+
+	after(() => {
+		sdsConnection.disconnect();
+		mockedJANUSServer.close();
+	});
 });
