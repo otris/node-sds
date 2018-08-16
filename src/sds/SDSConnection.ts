@@ -106,7 +106,6 @@ export class SDSConnection extends EventEmitter {
 
 			this.socket.on("error", (err: Error) => {
 				err.message = `Unhandled error ocurred: The TCP-connection failed: ${err.message}`;
-				console.error(err);
 				reject(err);
 			});
 
@@ -115,7 +114,6 @@ export class SDSConnection extends EventEmitter {
 			});
 
 			this.socket.on("end", () => {
-				console.log("Connection closed due received a FIN-package");
 				this.socket.end();
 			});
 

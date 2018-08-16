@@ -64,11 +64,7 @@ export class MockedJanusServer {
 			this.server.on("listening", resolve.bind(null, this));
 			this.server.on("error", (err: Error) => {
 				err.message = `[Mocked JANUS-server] Unhandled error occurred: ${err.message}`;
-				console.error(err);
 				reject(err);
-			});
-			this.server.on("close", () => {
-				console.log("Mocked JANUS-server shut down...");
 			});
 
 			this.server.listen(port, "127.0.0.1");
@@ -364,7 +360,6 @@ export class MockedJanusServer {
 					throw new Error(`Unknown operation: ${request.operation}`);
 				}
 		} catch (err) {
-			console.error(err);
 			this.socket.write(SDSConnection.INVALID);
 		}
 
