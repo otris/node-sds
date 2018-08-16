@@ -106,6 +106,7 @@ export class SDSConnection extends EventEmitter {
 
 			this.socket.on("error", (err: Error) => {
 				err.message = `Unhandled error ocurred: The TCP-connection failed: ${err.message}`;
+				this.disconnect();
 				reject(err);
 			});
 
@@ -119,6 +120,16 @@ export class SDSConnection extends EventEmitter {
 
 			this.socket.on("data", this.scanParseAndEmit.bind(this));
 		});
+	}
+
+	/**
+	 * Closes the TCP-connection with the JANUS-server
+	 */
+	public disconnect() {
+		if (this.socket) {
+			this.isConnected = false;
+			this.socket.destroy();
+		}
 	}
 
 	/**
