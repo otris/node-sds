@@ -38,6 +38,8 @@ $ npm run generate-package-lock
 ```
 
 and reinstall the dependencies. The package-lock file will only be generated once a new release gets published.
+
+**Please always run all tests against a live system before you push a PR!!!**   
 Happy hacking!
 
 ### Testing
