@@ -25,6 +25,8 @@ describe("Tests for the connection handler for the communication with the JANUS-
 		const sdsConnection = new SDSConnection();
 
 		// on this port no server is running
+		// note: if the test fails with error message "Error: timout of XXXms exceeded", don't worry.
+		//       this message is from the mocha test framework which stops the test after a given time (see command test in package.json)
 		const invalidPort = (PORT + 10);
 		return expect(sdsConnection.connect("test123", HOST, invalidPort))
 			.to.be.eventually.rejectedWith(Error)

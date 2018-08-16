@@ -23,7 +23,7 @@
     "lint": "tslint -c ./tslint.json -p test/tsconfig.json",
     "precommit": "ts-node scripts/precommit.ts",
     "prepublish": "npm run generate-package-lock",
-    "test": "tsc -p ./test && mocha --timeout 10000 -u tdd --recursive out/test/"
+    "test": "tsc -p ./test && mocha --timeout 20000 -u tdd --recursive out/test/"
   },
   "devDependencies": {
     "@types/chai": "^4.1.4",

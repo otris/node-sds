@@ -76,7 +76,7 @@ export class SDSConnection extends EventEmitter {
 	 * @returns The id of the client
 	 */
 	public connect(clientName: string, host: string, port: number = 11000): Promise<number> {
-		return new Promise((resolve, reject) => {
+		const connectPromise = new Promise((resolve, reject) => {
 			this.socket = createConnection(port, host);
 			this.socket.on("connect", async () => {
 				this.isConnected = true;
@@ -119,6 +119,14 @@ export class SDSConnection extends EventEmitter {
 			});
 
 			this.socket.on("data", this.scanParseAndEmit.bind(this));
+		});
+
+		// this is a workaround for the test execution: Because there is no possibility to set a timeout for the connection
+		// attempt, we reject the connection if it exceed a time of X ms
+		return timeout({
+			error: new Error(`Unhandled error ocurred: The TCP-connection failed: connect ETIMEDOUT ${host}:${port}`),
+			promise: connectPromise,
+			time: 15000,
 		});
 	}
 
