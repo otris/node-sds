@@ -2,7 +2,7 @@ import { expect } from "chai";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { SDSConnection } from "../../src/sds/SDSConnection";
-import { HOST, PORT, TEST_PRINCIPAL, TEST_USER, TEST_USER_PASS } from "../env.test";
+import { ADMIN_USER, ADMIN_USER_PASS, HOST, PORT, TEST_PRINCIPAL } from "../env.test";
 import { MockedJanusServer } from "../MockedJanusServer";
 
 /* tslint:disable:no-unused-expression */
@@ -18,7 +18,7 @@ describe("Tests for PDObject specific operations", () => {
 		// Init the mocked JANUS-server and connect with it to test operations of the PDClass
 		await mockedJANUSServer.init();
 		await sdsConnection.connect("test.node-sds.pdclass", HOST, PORT);
-		await sdsConnection.PDClass.changeUser(TEST_USER, TEST_USER_PASS);
+		await sdsConnection.PDClass.changeUser(ADMIN_USER, ADMIN_USER_PASS);
 		await sdsConnection.PDClass.changePrincipal(TEST_PRINCIPAL);
 	});
 

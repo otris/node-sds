@@ -7,7 +7,7 @@ import { ComOperations, Operations, ParameterNames } from "../src/sds/SDSMessage
 import { SDSRequest } from "../src/sds/SDSRequest";
 import { SDSResponse } from "../src/sds/SDSResponse";
 import { SDSSimpleMessage } from "../src/sds/SDSSimpleMessage";
-import { TEST_PRINCIPAL, TEST_USER, TEST_USER_PASS } from "./env.test";
+import { ADMIN_USER, ADMIN_USER_PASS, TEST_PRINCIPAL } from "./env.test";
 import { MockedPDObject } from "./MockedPDObject";
 
 export class MockedJanusServer {
@@ -169,8 +169,8 @@ export class MockedJanusServer {
 		responseInvalidPass.operation = 127;
 		responseInvalidPass.addParameter(ParameterNames.RETURN_VALUE, 21); // PDMeta error code
 
-		if (login === TEST_USER) {
-			if (hashedPassword === crypt_md5(TEST_USER_PASS, PDClass.JANUS_CRYPTMD5_SALT).value || hashedPassword === "") {
+		if (login === ADMIN_USER) {
+			if (hashedPassword === crypt_md5(ADMIN_USER_PASS, PDClass.JANUS_CRYPTMD5_SALT).value || hashedPassword === "") {
 				response.operation = 173; // don't know
 				response.addParameter(ParameterNames.RETURN_VALUE, 0);
 				response.addParameter(ParameterNames.USER, "Administrator");

@@ -3,7 +3,7 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { PDObject } from "../../src/pd-scripting/PDObject";
 import { SDSConnection } from "../../src/sds/SDSConnection";
-import { HOST, isLiveMode, PORT, TEST_PRINCIPAL, TEST_USER, TEST_USER_PASS } from "../env.test";
+import { ADMIN_USER, ADMIN_USER_PASS, HOST, isLiveMode, PORT, TEST_FELLOW, TEST_FELLOW_PASS, TEST_PRINCIPAL } from "../env.test";
 import { MockedJanusServer } from "../MockedJanusServer";
 
 /* tslint:disable:no-unused-expression */
@@ -19,27 +19,26 @@ describe("Tests for the PDClass-library of the JANUS-application", async () => {
 		// Init the mocked JANUS-server and connect with it to test operations of the PDClass
 		await mockedJANUSServer.init();
 		await sdsConnection.connect("test.node-sds.pdclass", HOST, PORT);
-		await sdsConnection.PDClass.changeUser(TEST_USER, TEST_USER_PASS);
+		await sdsConnection.PDClass.changeUser(ADMIN_USER, ADMIN_USER_PASS);
 		await sdsConnection.PDClass.changePrincipal(TEST_PRINCIPAL);
 	});
 
 	it("should successfully change the logged in user", () => {
-		return expect(sdsConnection.PDClass.changeUser(TEST_USER, TEST_USER_PASS)).to.not.be.eventually.rejected;
+		return expect(sdsConnection.PDClass.changeUser(ADMIN_USER, ADMIN_USER_PASS)).to.not.be.eventually.rejected;
 	});
 
 	it("should return the id of the logged in user", async () => {
-		const userId = await sdsConnection.PDClass.changeUser(TEST_USER, TEST_USER_PASS);
+		const userId = await sdsConnection.PDClass.changeUser(ADMIN_USER, ADMIN_USER_PASS);
 		expect(userId).to.be.a("number");
 	});
 
 	(isLiveMode()) ? it.skip : it("should successfully change the logged in user when no password is set", () => {
-		// TODO: it's only possible to change the user to the admin user. Is this correct?
 		// This test will fail on the live system if the password of the admin user is not empty
-		return expect(sdsConnection.PDClass.changeUser(TEST_USER, "")).to.not.be.eventually.rejected;
+		return expect(sdsConnection.PDClass.changeUser(ADMIN_USER, "")).to.not.be.eventually.rejected;
 	});
 
 	it("should reject the changeUser-request because the user doesn't exists", () => {
-		return expect(sdsConnection.PDClass.changeUser(TEST_USER.split("").reverse().join(""), TEST_USER_PASS))
+		return expect(sdsConnection.PDClass.changeUser(ADMIN_USER.split("").reverse().join(""), ADMIN_USER_PASS))
 			.to.be.eventually.rejectedWith(Error)
 			.and.have.property("message")
 			.which.matches(/Change user request failed/)
@@ -47,7 +46,7 @@ describe("Tests for the PDClass-library of the JANUS-application", async () => {
 	});
 
 	it("should reject the changeUser-request because the password is wrong", () => {
-		return expect(sdsConnection.PDClass.changeUser(TEST_USER, `${TEST_USER_PASS}random`))
+		return expect(sdsConnection.PDClass.changeUser(ADMIN_USER, `${ADMIN_USER_PASS}random`))
 			.to.be.eventually.rejectedWith(Error)
 			.and.have.property("message")
 			.which.matches(/Change user request failed/)

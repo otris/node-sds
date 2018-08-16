@@ -14,10 +14,16 @@ export const PORT = 11001;
 export const TEST_PRINCIPAL = "test";
 
 /** A user which can be used to login with */
-export const TEST_USER = "admin";
+export const ADMIN_USER = "admin";
 
 /** The passwort of the TEST_USER */
-export const TEST_USER_PASS = "test123";
+export const ADMIN_USER_PASS = "test123";
+
+/** A fellow registered in the passed principal */
+export const TEST_FELLOW = "test";
+
+/** The password of the fellow */
+export const TEST_FELLOW_PASS = "test";
 
 /**
  * Return true if you run the test against a live system
