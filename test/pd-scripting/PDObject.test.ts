@@ -8,7 +8,7 @@ import { MockedJanusServer } from "../MockedJanusServer";
 /* tslint:disable:no-unused-expression */
 chai.use(chaiAsPromised);
 
-describe("Tests for the connection handler for the communication with the JANUS-server", () => {
+describe("Tests for PDObject specific operations", () => {
 	// For the unit tests we need to mock a JANUS-server that sends back meaningful and
 	// correct responses to incoming requests
 	const mockedJANUSServer = new MockedJanusServer();

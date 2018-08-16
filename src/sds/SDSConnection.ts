@@ -69,7 +69,7 @@ export class SDSConnection extends EventEmitter {
 	}
 
 	/**
-	 * Established the TCP-connection with the JANUS-server
+	 * Establishes the TCP-connection with the JANUS-server
 	 * @param clientName Name with which you want to log in to the server
 	 * @param host Host to connect with (IPv4-adress)
 	 * @param port Port of the JANUS-server

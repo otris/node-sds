@@ -10,7 +10,7 @@ function mockResponse(request: Buffer): SDSResponse {
 // chai expressions will be linted
 /* tslint:disable:no-unused-expression */
 
-describe("Tests evaluating SDS responses", () => {
+describe("Tests for evaluating SDS responses", () => {
 	/** Contains parameter "CLIENT_ID" = 9 */
 	/* tslint:disable-next-line:max-line-length */
 	const bufferWithIntParam = Buffer.from([0, 0, 0, 72, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 0, 0, 0, 9, 3, 34, 237, 209, 247, 229, 3, 35, 241, 39, 192, 170, 3, 8, 0, 0, 4, 21, 2, 12, 3, 37, 0, 0, 0, 2, 135, 4, 7, 2, 0, 0, 0, 11, 87, 105, 110, 100, 111, 119, 115, 32, 49, 48, 0, 3, 16, 0, 0, 0, 0, 130, 22]);
