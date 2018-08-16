@@ -5,7 +5,7 @@
  */
 
 /** Default server to connect with */
-export const HOST = "localhost";
+export const HOST = "127.0.0.1";
 
 /** Port the server is listening on */
 export const PORT = 11001;
