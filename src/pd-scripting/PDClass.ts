@@ -12,8 +12,12 @@ export class PDClass extends JANUSClass {
 	/** Salt for hashing passwords before sending them to the JANUS-server */
 	public static JANUS_CRYPTMD5_SALT: string = "o3";
 
+	/** Map with the user ids */
+	private userIds: Map<string, number>;
+
 	constructor(sdsConnection: SDSConnection) {
 		super(sdsConnection);
+		this.userIds = new Map();
 	}
 
 	/**
@@ -45,7 +49,7 @@ export class PDClass extends JANUSClass {
 	 * @returns The id of the user
 	 */
 	public changeUser(login: string, password: string | Hash, principal?: string): Promise<UserId> {
-		return new Promise(async (resolve, reject) => {
+		return new Promise<UserId>(async (resolve, reject) => {
 			const hashedPassword: string = (password instanceof Hash)
 				? password.value
 				:
@@ -65,12 +69,30 @@ export class PDClass extends JANUSClass {
 			const response = await this.sdsConnection.send(request);
 			const result = response.getParameter(ParameterNames.RETURN_VALUE) as number;
 			if (result === 0) {
-				resolve(response.getParameter(ParameterNames.USER_ID));
+				let userId: number = -1;
+				if (!this.userIds.has(login)) {
+					userId = response.getParameter(ParameterNames.USER_ID);
+					this.userIds.set(login, userId);
+				} else if (this.userIds.has(login)) {
+					userId = this.userIds.get(login) as number;
+				} else {
+					const errorMessage = await this.getFormattedError(`Change user request failed: Could not determine the user id`);
+					reject(new Error(errorMessage));
+				}
+
+				resolve(userId);
 			} else {
 				// Error occurred. Get the error message from the server
 				const errorMessage = await this.getFormattedError(`Change user request failed. Maybe you forgot to provide the principal?`, result, this.sdsConnection.PDMeta.errorMessage);
 				reject(new Error(errorMessage));
 			}
+		}).then<UserId>(async (userId: UserId) => {
+			// if a principal is provided, call a change principal request, because the server requires that after a change user request a change principal request will be send
+			if (!!principal) {
+				await this.changePrincipal(principal);
+			}
+
+			return userId;
 		});
 	}
 

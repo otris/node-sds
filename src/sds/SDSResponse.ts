@@ -123,6 +123,15 @@ export class SDSResponse extends SDSMessage {
 	}
 
 	/**
+	 * Determines if a response contains a given parameter
+	 * @param parameterName Name of the paramter
+	 * @returns True if the request contains the passed parameter, otherwise false
+	 */
+	public hasParameter<T extends ParameterNames>(parameterName: T): boolean {
+		return this.parameters.has(parameterName);
+	}
+
+	/**
 	 * Determines if the response is a ACK
 	 * @returns true, if the response is an ACK, otherwise false
 	 */
