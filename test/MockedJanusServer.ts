@@ -21,8 +21,6 @@ export class MockedJanusServer {
 	/** Message size of a received message (needed to know if a message was received completely) */
 	private messageSize: number;
 
-	private pdMetaErrorMessagesMap: Map<number, string>;
-
 	/** Map with the PDObjects of the server */
 	private pdObjectsMap: Map<string, MockedPDObject>;
 
@@ -39,14 +37,6 @@ export class MockedJanusServer {
 		this.server = null as any;
 		this.socket = null as any;
 		this.pdObjectsMap = new Map();
-
-		// Fill the PDMeta error messages
-		this.pdMetaErrorMessagesMap = new Map([
-			[16, `Login-Name, Mandant oder Passwort für "%v" nicht korrekt.`],
-			[18, `Sie sind dem gewünschten Mandanten leider nicht zugeordnet.`],
-			[21, `Login-Name oder Passwort für "%v" nicht korrekt.`],
-			[268544, ``],
-		]);
 	}
 
 	/**
@@ -203,12 +193,9 @@ export class MockedJanusServer {
 
 		switch (request.getParameter(ParameterNames.INDEX)) {
 			case ComOperations.ERROR_MESSAGE:
-				const pdMetaIndex = request.getParameter(ParameterNames.VALUE) as number;
-				if (this.pdMetaErrorMessagesMap.has(pdMetaIndex)) {
-					response.addParameter(ParameterNames.RETURN_VALUE, this.pdMetaErrorMessagesMap.get(pdMetaIndex) as string);
-				} else {
-					throw new Error(`PDMeta error message ${pdMetaIndex} unknown`);
-				}
+				// just return a random string for the requested error code. The tests should not match the
+				// translated error message. It can change in the future and they are not part of this module
+				response.addParameter(ParameterNames.RETURN_VALUE, "<random>");
 				break;
 
 			case ComOperations.GET_CLASSES:
@@ -366,6 +353,15 @@ export class MockedJanusServer {
 
 				case Operations.PDOBJECT_SYNC:
 					this.handlePdObjectSync(request);
+					break;
+
+				case Operations.PDMETA_GETSTRING:
+					// just return a random string for the requested error code. The tests should not match the
+					// translated error message. It can change in the future and they are not part of this module
+					const response = new SDSRequest();
+					response.addParameter(ParameterNames.RETURN_VALUE, "<random>");
+					response.operation = 173;
+					this.socket.write(response.pack());
 					break;
 
 				default:
