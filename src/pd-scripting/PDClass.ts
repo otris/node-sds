@@ -41,9 +41,10 @@ export class PDClass extends JANUSClass {
 	 * Changes the user which is logged in
 	 * @param login Login of the user
 	 * @param password password of the user or hashed MD5-value of the password
+	 * @param principal The principal name where the user is registered (needed if you want to change to a fellow)
 	 * @returns The id of the user
 	 */
-	public changeUser(login: string, password: string | Hash): Promise<UserId> {
+	public changeUser(login: string, password: string | Hash, principal?: string): Promise<UserId> {
 		return new Promise(async (resolve, reject) => {
 			const hashedPassword: string = (password instanceof Hash)
 				? password.value
@@ -51,6 +52,10 @@ export class PDClass extends JANUSClass {
 				(password === "") // When the password is an empty string, don't hash it
 					? ""
 					: crypt_md5(password, PDClass.JANUS_CRYPTMD5_SALT).value;
+
+			if (login !== "admin" && !!principal && !login.endsWith(`.${principal}`)) {
+				login = `${login}.${principal}`;
+			}
 
 			const request = new SDSRequest();
 			request.operation = Operations.CHANGE_USER;
@@ -63,7 +68,7 @@ export class PDClass extends JANUSClass {
 				resolve(response.getParameter(ParameterNames.USER_ID));
 			} else {
 				// Error occurred. Get the error message from the server
-				const errorMessage = await this.getFormattedError(`Change user request failed`, result, this.sdsConnection.PDMeta.errorMessage);
+				const errorMessage = await this.getFormattedError(`Change user request failed. Maybe you forgot to provide the principal?`, result, this.sdsConnection.PDMeta.errorMessage);
 				reject(new Error(errorMessage));
 			}
 		});
