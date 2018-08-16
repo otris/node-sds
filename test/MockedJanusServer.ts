@@ -7,7 +7,7 @@ import { ComOperations, Operations, ParameterNames } from "../src/sds/SDSMessage
 import { SDSRequest } from "../src/sds/SDSRequest";
 import { SDSResponse } from "../src/sds/SDSResponse";
 import { SDSSimpleMessage } from "../src/sds/SDSSimpleMessage";
-import { ADMIN_USER, ADMIN_USER_PASS, TEST_PRINCIPAL } from "./env.test";
+import { ADMIN_USER, ADMIN_USER_PASS, TEST_FELLOW, TEST_FELLOW_PASS, TEST_PRINCIPAL } from "./env.test";
 import { MockedPDObject } from "./MockedPDObject";
 
 export class MockedJanusServer {
@@ -175,6 +175,16 @@ export class MockedJanusServer {
 				response.addParameter(ParameterNames.RETURN_VALUE, 0);
 				response.addParameter(ParameterNames.USER, "Administrator");
 				response.addParameter(ParameterNames.USER_ID, 1);
+				response.addParameter(ParameterNames.PASSWORD, hashedPassword);
+			} else {
+				response = responseInvalidPass;
+			}
+		} else if (login === `${TEST_FELLOW}.${TEST_PRINCIPAL}`) {
+			if (hashedPassword === crypt_md5(TEST_FELLOW_PASS, PDClass.JANUS_CRYPTMD5_SALT).value || hashedPassword === "") {
+				response.operation = 173; // don't know
+				response.addParameter(ParameterNames.RETURN_VALUE, 0);
+				response.addParameter(ParameterNames.USER, "Test");
+				response.addParameter(ParameterNames.USER_ID, 2);
 				response.addParameter(ParameterNames.PASSWORD, hashedPassword);
 			} else {
 				response = responseInvalidPass;

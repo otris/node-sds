@@ -32,6 +32,32 @@ describe("Tests for the PDClass-library of the JANUS-application", async () => {
 		expect(userId).to.be.a("number");
 	});
 
+	it("should successfully change the user to a principals fellow", () => {
+		return expect(sdsConnection.PDClass.changeUser(TEST_FELLOW, TEST_FELLOW_PASS, TEST_PRINCIPAL)).to.not.be.eventually.rejected;
+	});
+
+	it("should fail to change the user to a fellow if the principal is not passed", () => {
+		return expect(sdsConnection.PDClass.changeUser(TEST_FELLOW, TEST_FELLOW_PASS))
+			.to.be.eventually.rejectedWith(Error)
+			.and.have.property("message")
+			.which.matches(/Change user request failed\. Maybe you forgot to provide the principal\?/)
+			.and.matches(/Error code: 16/);
+	});
+
+	it("should not reject the change user request if the user is the admin user and a principal is passed", () => {
+		// this has to be tested because if the principal name would be appended to the admin user login, the login would fail
+		return expect(sdsConnection.PDClass.changeUser(ADMIN_USER, ADMIN_USER_PASS, TEST_PRINCIPAL)).to.not.be.eventually.rejected;
+	});
+
+	it("should automatically change the principal if a changeUser-request is executed to a fellow", async () => {
+		await sdsConnection.PDClass.changeUser(TEST_FELLOW, TEST_FELLOW_PASS, TEST_PRINCIPAL);
+
+		// @todo: For now it's not possible to request the current principal. But the server sends no response if two changeUser-requests
+		//        are received without a changePrincipal-request between them, which causes the second request to be rejected with an timeout
+		//        But this should be definitely be changed in the future
+		return expect(sdsConnection.PDClass.changeUser(TEST_FELLOW, TEST_FELLOW_PASS, TEST_PRINCIPAL)).to.not.be.eventually.rejected;
+	});
+
 	(isLiveMode()) ? it.skip : it("should successfully change the logged in user when no password is set", () => {
 		// This test will fail on the live system if the password of the admin user is not empty
 		return expect(sdsConnection.PDClass.changeUser(ADMIN_USER, "")).to.not.be.eventually.rejected;
