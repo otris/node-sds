@@ -1,5 +1,4 @@
 // T O D O's until the refactored version has the same functionality like the old one
-// @todo: Function missing: getLogMessaged (see https://github.com/otris/node-sds/blob/master/src/sds.ts#L275)
 // @todo: Function missing: setLanguage (see https://github.com/otris/node-sds/blob/master/src/sds.ts#L313)
 // @todo: Function missing: runScriptOnServer (see https://github.com/otris/node-sds/blob/master/src/sds.ts#L338)
 // @todo: Function missing: callClassOperation (see https://github.com/otris/node-sds/blob/master/src/sds.ts#L355)
@@ -12,6 +11,7 @@ import { timeout } from "promised-timeout";
 import { ntohl } from "../network";
 import { PDClass } from "../pd-scripting/PDClass";
 import { PDMeta } from "../pd-scripting/PDMeta";
+import { ServerGui } from "../pd-scripting/ServerGui";
 import { ParameterNames, SDSMessage } from "./SDSMessage";
 import { SDSRequest } from "./SDSRequest";
 import { SDSResponse } from "./SDSResponse";
@@ -42,6 +42,9 @@ export class SDSConnection {
 
 	/** PDMeta functions */
 	public PDMeta: PDMeta;
+
+	/** Functions of the server gui */
+	public ServerGui: ServerGui;
 	/* tslint:enable:variable-name */
 
 	/** Buffered bytes of the message */
@@ -77,6 +80,7 @@ export class SDSConnection {
 		// Initialize functions
 		this.PDClass = null as any;
 		this.PDMeta = null as any;
+		this.ServerGui = null as any;
 	}
 
 	/**
@@ -110,6 +114,7 @@ export class SDSConnection {
 				// Initialize functions
 				this.PDClass = new PDClass(this);
 				this.PDMeta = new PDMeta(this);
+				this.ServerGui = new ServerGui(this);
 				await this.PDMeta.initialize();
 
 				resolve(clientId);

@@ -50,6 +50,9 @@ export enum Operations {
 
 	/** Used to request the string representation of an error code (PDMeta.getString) or to get the available class names of the JANUS-application (PDMeta.getClasses) */
 	COM_OPERATION = 199,
+
+	/** Operations of the server GUI */
+	SERVER_GUI_OPERATION = 209,
 }
 
 /**
@@ -76,8 +79,12 @@ export enum ParameterNames {
 	INIT = 53,
 	PRINCIPAL = 80,
 	FILENAME = 87,
-	OP_CODE = 88,
+	OPERATION_CODE = 88,
 	FLAG = 119,
+}
+
+export enum ServerGuiOperations {
+	GET_LOG_MESSAGES = 10,
 }
 
 export enum Types {
