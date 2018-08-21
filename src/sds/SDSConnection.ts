@@ -1,6 +1,5 @@
 // T O D O's until the refactored version has the same functionality like the old one
 // @todo: Function missing: setLanguage (see https://github.com/otris/node-sds/blob/master/src/sds.ts#L313)
-// @todo: Function missing: runScriptOnServer (see https://github.com/otris/node-sds/blob/master/src/sds.ts#L338)
 // @todo: Function missing: callClassOperation (see https://github.com/otris/node-sds/blob/master/src/sds.ts#L355)
 
 import { EventEmitter } from "events";
@@ -9,6 +8,7 @@ import * as os from "os";
 import * as promisePrototypeFinally from "promise.prototype.finally";
 import { timeout } from "promised-timeout";
 import { ntohl } from "../network";
+import { CustomOperations } from "../pd-scripting/CustomOperations";
 import { PDClass } from "../pd-scripting/PDClass";
 import { PDMeta } from "../pd-scripting/PDMeta";
 import { ServerGui } from "../pd-scripting/ServerGui";
@@ -37,6 +37,9 @@ export class SDSConnection {
 	public static TIMEOUT = 6000;
 
 	/* tslint:disable:variable-name */
+	/** Custom PD-Operations */
+	public CustomOperations: CustomOperations;
+
 	/** PDClass functions */
 	public PDClass: PDClass;
 
@@ -78,6 +81,7 @@ export class SDSConnection {
 		this.isBusy = false;
 
 		// Initialize functions
+		this.CustomOperations = null as any;
 		this.PDClass = null as any;
 		this.PDMeta = null as any;
 		this.ServerGui = null as any;
@@ -112,6 +116,7 @@ export class SDSConnection {
 				const clientId = response.getParameter(ParameterNames.CLIENT_ID);
 
 				// Initialize functions
+				this.CustomOperations = new CustomOperations(this);
 				this.PDClass = new PDClass(this);
 				this.PDMeta = new PDMeta(this);
 				this.ServerGui = new ServerGui(this);

@@ -4,6 +4,7 @@ export enum ComOperations {
 	GET_CLASSES = 5,
 	GET_CLASS_ID = 11,
 	ERROR_MESSAGE = 17,
+	RUN_SCRIPT_ON_SERVER = 42,
 }
 
 /**
