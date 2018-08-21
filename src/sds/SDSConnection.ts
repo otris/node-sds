@@ -1,3 +1,9 @@
+// T O D O's until the refactored version has the same functionality like the old one
+// @todo: Function missing: getLogMessaged (see https://github.com/otris/node-sds/blob/master/src/sds.ts#L275)
+// @todo: Function missing: setLanguage (see https://github.com/otris/node-sds/blob/master/src/sds.ts#L313)
+// @todo: Function missing: runScriptOnServer (see https://github.com/otris/node-sds/blob/master/src/sds.ts#L338)
+// @todo: Function missing: callClassOperation (see https://github.com/otris/node-sds/blob/master/src/sds.ts#L355)
+
 import { EventEmitter } from "events";
 import { createConnection, Socket } from "net";
 import * as os from "os";
@@ -140,6 +146,7 @@ export class SDSConnection {
 	 */
 	public disconnect() {
 		if (this.socket) {
+			// @todo: send a disconnect message to the client (see https://github.com/otris/node-sds/blob/master/src/sds.ts#L250)
 			this.isConnected = false;
 			this.socket.destroy();
 		}
