@@ -97,6 +97,9 @@ export enum Types {
  */
 export abstract class SDSMessage {
 
+	/** Initial size of the created buffer */
+	private static INITIAL_BUFFER_SIZE: number = 4096;
+
 	/** Holds the object id to operate on. By default, it's empty */
 	protected _oId: string;
 
@@ -108,9 +111,6 @@ export abstract class SDSMessage {
 
 	/** Number of currently buffered bytes */
 	protected bufferedLength: number;
-
-	/** Initial size of the created buffer */
-	private INITIAL_BUFFER_SIZE = 4096;
 
 	/**
 	 * Returns the object id the response belongs to
@@ -132,7 +132,7 @@ export abstract class SDSMessage {
 			this.buffer = buffer;
 			this.bufferedLength = ntohl(buffer, 0);
 		} else {
-			this.buffer = Buffer.alloc(this.INITIAL_BUFFER_SIZE);
+			this.buffer = Buffer.alloc(SDSMessage.INITIAL_BUFFER_SIZE);
 			this.bufferedLength = 0;
 		}
 	}
