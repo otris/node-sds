@@ -27,6 +27,9 @@ export class SDSConnection {
 	/** Invalid message (if the request was invalid) */
 	public static INVALID: Buffer = Buffer.from("invalid", "ascii");
 
+	/** Timeout in milliseconds to wait for a response from the server */
+	public static TIMEOUT = 6000;
+
 	/* tslint:disable:variable-name */
 	/** PDClass functions */
 	public PDClass: PDClass;
@@ -259,8 +262,6 @@ export class SDSConnection {
 			// add the current request to the queue to prevent sending requests parallel
 			this.isBusy = true;
 
-			// normal case: call send with timeout
-			const ms = 6000;
 			if (request instanceof SDSRequest) {
 				this.socket.write(request.pack());
 			} else {
@@ -270,9 +271,9 @@ export class SDSConnection {
 			// clear timeouts if response finishes in time
 			// see motivation of npm promised-timeout
 			return timeout({
-				error: new Error(`Request timed out (after ${ms} ms)`),
+				error: new Error(`Request timed out (after ${SDSConnection.TIMEOUT} ms)`),
 				promise: requestPromise,
-				time: ms,
+				time: SDSConnection.TIMEOUT,
 			}).finally(() => {
 				this.isBusy = false;
 			});
