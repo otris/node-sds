@@ -1,7 +1,7 @@
 import { SDSConnection } from "../sds/SDSConnection";
 import { Operations, ParameterNames } from "../sds/SDSMessage";
 import { SDSRequest } from "../sds/SDSRequest";
-import { JANUSClass } from "./JANUSClass";
+import { JANUSClass, OperationReturnValue } from "./JANUSClass";
 
 export class PDObject extends JANUSClass {
 
@@ -36,6 +36,29 @@ export class PDObject extends JANUSClass {
 	/** Indicates if an object is a transaction object or not */
 	public get isTransactional(): boolean {
 		return this._isTransactional;
+	}
+
+	/**
+	 * Executes an operation on the JANUS-server
+	 * @todo This function is untested
+	 * @param operation Name of the operation
+	 * @param parameters The parameters of the operation
+	 * @param parametersPDO TODO
+	 * @returns Execution result of the operation
+	 */
+	public callOperation(operation: string, parameters?: string[], pdObjects?: PDObject[]): Promise<number> {
+		return this.callOperationInternal(false, operation, parameters, pdObjects) as Promise<number>;
+	}
+
+	/**
+	 * Executes an operation on the JANUS-server asynchronously
+	 * @todo This function is untested
+	 * @param operation Name of the operation
+	 * @param parameters The parameters of the operation
+	 * @param parametersPDO TODO
+	 */
+	public callOperationAsync(operation: string, parameters?: string[], pdObjects?: PDObject[]): Promise<void> {
+		return this.callOperationInternal(true, operation, parameters, pdObjects) as Promise<void>;
 	}
 
 	/**
@@ -101,6 +124,44 @@ export class PDObject extends JANUSClass {
 			// this operation
 			await this.sdsConnection.send(request);
 			resolve();
+		});
+	}
+
+	/**
+	 * Executes an operation on the JANUS-server.
+	 * @param operation Name of the operation
+	 * @param parameters The parameters of the operation
+	 * @param parametersPDO TODO
+	 */
+	private callOperationInternal(async: boolean, operation: string, parameters?: string[], pdObjects?: PDObject[]): Promise<OperationReturnValue> {
+		return new Promise<OperationReturnValue>(async (resolve, reject) => {
+			const request = new SDSRequest();
+			request.oId = this.oId;
+			request.operation = (async) ? Operations.PDOBJECT_CALL_ASYNC : Operations.PDOBJECT_CALL_SYNC;
+			request.addParameter(ParameterNames.CLASS_NAME, operation);
+
+			if (Array.isArray(parameters)) {
+				// note: once the operation is parameterized, the operation code is different!
+				request.operation = (async) ? Operations.PDOBJECT_CALL_ASYNC_PARAMETERIZED : Operations.PDOBJECT_CALL_SYNC_PARAMETERIZED;
+
+				if (parameters.length > 0) {
+					request.addParameter(ParameterNames.PARAMETER, parameters);
+				}
+
+				if (Array.isArray(pdObjects) && pdObjects.length > 0) {
+					request.addParameter(ParameterNames.PARAMETER_PDO, pdObjects.map((pdObject: PDObject): string => pdObject.oId));
+				}
+			}
+
+			const response = await this.sdsConnection.send(request);
+			if (async) {
+				// the server doesn't wait for the operation to finish
+				// so we have no clue about the success or failure of the execution
+				resolve();
+			} else {
+				const result = response.getParameter(ParameterNames.RETURN_VALUE) as number;
+				resolve(result);
+			}
 		});
 	}
 }
