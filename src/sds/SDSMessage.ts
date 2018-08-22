@@ -45,7 +45,11 @@ export enum Operations {
 	PDOBJECT_GETATTRIBUTE = 33,
 	PDOBJECT_SYNC = 62,
 	PDCLASS_PTR = 53,
+	PDCLASS_CALL_SYNC = 57,
+	PDCLASS_CALL_ASYNC = 58,
 	PDCLASS_NEWOBJECT = 63,
+	PDCLASS_CALL_SYNC_PARAMETERIZED = 101,
+	PDCLASS_CALL_ASYNC_PARAMETERIZED = 102,
 	PDMETA_GETSTRING = 141,
 
 	/** Used to request the string representation of an error code (PDMeta.getString) or to get the available class names of the JANUS-application (PDMeta.getClasses) */

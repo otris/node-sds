@@ -1,6 +1,8 @@
 ### TODOs
 | Filename | line # | TODO
 |:------|:------:|:------
+| src/pd-scripting/PDClass.ts | 25 | This function is untested
+| src/pd-scripting/PDClass.ts | 37 | This function is untested
 | src/pd-scripting/PDObject.ts | 26 | Fetch this property if it's not set
 | src/pd-scripting/PDObject.ts | 32 | Fetch this property if it's not set
 | src/pd-scripting/PDObject.ts | 55 | The return value represent some flags which gives us informations about the success of this operation
