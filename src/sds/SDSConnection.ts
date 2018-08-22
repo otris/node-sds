@@ -20,8 +20,6 @@ import { SDSSimpleMessage } from "./SDSSimpleMessage";
 // make Promise.finally available
 promisePrototypeFinally.shim();
 
-declare type RequestQueueElement = Buffer | SDSRequest;
-
 export class SDSConnection {
 
 	/** Acknowledgment message */

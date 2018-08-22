@@ -12,8 +12,8 @@
 | src/sds/SDSConnection.ts | 2 | Function missing: setLanguage (see https://github.com/otris/node-sds/blob/master/src/sds.ts#L313)
 | src/sds/SDSConnection.ts | 3 | Function missing: runScriptOnServer (see https://github.com/otris/node-sds/blob/master/src/sds.ts#L338)
 | src/sds/SDSConnection.ts | 4 | Function missing: callClassOperation (see https://github.com/otris/node-sds/blob/master/src/sds.ts#L355)
-| src/sds/SDSConnection.ts | 154 | send a disconnect message to the client (see https://github.com/otris/node-sds/blob/master/src/sds.ts#L250)
-| src/sds/SDSConnection.ts | 270 | Create a qualified "disconnect" response
+| src/sds/SDSConnection.ts | 152 | send a disconnect message to the client (see https://github.com/otris/node-sds/blob/master/src/sds.ts#L250)
+| src/sds/SDSConnection.ts | 268 | Create a qualified "disconnect" response
 | src/sds/SDSRequest.ts | 81 | Maybe we should use Buffer.concat instead (test which one is faster)
 | test/MockedJanusServer.ts | 99 | The magic can look different. For now, the magic send by the SDS-API will be fixed,
 | test/MockedJanusServer.ts | 106 | I don't know how the id has to look like. For now, send a random 6 digit long number

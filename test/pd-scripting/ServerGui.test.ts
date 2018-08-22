@@ -29,7 +29,7 @@ describe("Tests for the PDClass-library of the JANUS-application", async () => {
 
 		// 2. execute a script which produces log messages
 		const outputString = "Test for the operation 'ServerGui.getLogMessages'";
-		const scriptToExecute = `util.out("${outputString}");`;
+		// const scriptToExecute = `util.out("${outputString}");`;
 
 		// 3. again, request logs from the server, but pass the lastSeen-attribute to only receive the newly logs
 		logMessages = await sdsConnection.ServerGui.getLogMessages(logMessages.lastSeen);

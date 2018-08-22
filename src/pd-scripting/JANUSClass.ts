@@ -1,5 +1,4 @@
 import { SDSConnection } from "../sds/SDSConnection";
-import { PDMeta } from "./PDMeta";
 
 /** Return value of a server operation */
 export type OperationReturnValue = string | string[] | number | undefined;

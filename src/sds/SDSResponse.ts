@@ -156,6 +156,8 @@ Parameters (${this.parameters.size})`;
 
 		if (this.parameters.size > 0) {
 			out += ":";
+
+			// @ts-ignore
 			for (const [key, value] of this.parameters) {
 				out += `\r\n${JSON.stringify(value)}`;
 			}
@@ -314,12 +316,10 @@ Parameters (${this.parameters.size})`;
 					break;
 
 				case Types.STRING:
-					const stringSize = ntohl(this.buffer, i + 2);
 					responseParameter.value = this.getStringParameter(i, Types.STRING);
 					break;
 
 				case Types.STRING_LIST:
-					const stringListSize = ntohl(this.buffer, i + 2);
 					responseParameter.value = this.getStringListParameter(i, Types.STRING_LIST);
 					break;
 

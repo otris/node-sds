@@ -78,7 +78,7 @@ export class PDObject extends JANUSClass {
 
 			// @todo: The return value represent some flags which gives us informations about the success of this operation
 			//        but I don't know how to evaluate these flags
-			const result = response.getParameter(ParameterNames.RETURN_VALUE) as number;
+			// const result = response.getParameter(ParameterNames.RETURN_VALUE) as number;
 
 			const attributeValue = response.getParameter(ParameterNames.VALUE) as string;
 			resolve(attributeValue);

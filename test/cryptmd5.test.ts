@@ -1,7 +1,7 @@
 "use strict";
 
 import * as assert from "assert";
-import { crypt_md5, Hash } from "../src/cryptmd5";
+import { crypt_md5 } from "../src/cryptmd5";
 
 suite("test crypt_md5 function", () => {
 	test("with long salt", () => {
