@@ -103,7 +103,7 @@ export class SDSConnection {
 				// Send the client name and os
 				const request = new SDSRequest();
 				request.operation = 0; // this operation is not labeled. Take it as it is
-				request.add(Buffer.from(`${clientName} on ${os.platform()}`));
+				request.add(Buffer.from(SDSMessage.term_utf8(`${clientName} on ${os.platform()}`)));
 
 				// wait for the client-ID
 				response = await this.send(request);
