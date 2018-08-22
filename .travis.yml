@@ -2,4 +2,5 @@ language: node_js
 node_js:
         - '6.9'
 script:
-        - npm run --silent test && npm run --silent lint
+        - echo 'Running TSLint' && yarn run lint
+        - echo 'Running tests' && yarn run test
