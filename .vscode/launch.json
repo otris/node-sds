@@ -13,7 +13,7 @@
             "sourceMaps": true,
             "cwd": "${workspaceRoot}",
             "protocol": "inspector",
-        }
+        },
         {
             "name": "Launch Tests",
             "type": "node",
