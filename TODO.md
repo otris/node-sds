@@ -1,10 +1,14 @@
 ### TODOs
 | Filename | line # | TODO
 |:------|:------:|:------
-| src/pd-scripting/PDObject.ts | 26 | Fetch this property if it's not set
-| src/pd-scripting/PDObject.ts | 32 | Fetch this property if it's not set
-| src/pd-scripting/PDObject.ts | 55 | The return value represent some flags which gives us informations about the success of this operation
-| src/pd-scripting/PDObject.ts | 99 | The sync operation can now not be used to change values of the object,
+| src/pd-scripting/PDClass.ts | 26 | This function is untested
+| src/pd-scripting/PDClass.ts | 38 | This function is untested
+| src/pd-scripting/PDObject.ts | 27 | Fetch this property if it's not set
+| src/pd-scripting/PDObject.ts | 33 | Fetch this property if it's not set
+| src/pd-scripting/PDObject.ts | 44 | This function is untested
+| src/pd-scripting/PDObject.ts | 56 | This function is untested
+| src/pd-scripting/PDObject.ts | 79 | The return value represent some flags which gives us informations about the success of this operation
+| src/pd-scripting/PDObject.ts | 123 | The sync operation can now not be used to change values of the object,
 | src/sds/SDSConnection.ts | 2 | Function missing: setLanguage (see https://github.com/otris/node-sds/blob/master/src/sds.ts#L313)
 | src/sds/SDSConnection.ts | 3 | Function missing: runScriptOnServer (see https://github.com/otris/node-sds/blob/master/src/sds.ts#L338)
 | src/sds/SDSConnection.ts | 4 | Function missing: callClassOperation (see https://github.com/otris/node-sds/blob/master/src/sds.ts#L355)

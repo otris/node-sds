@@ -2,7 +2,8 @@ import { crypt_md5, Hash } from "../cryptmd5";
 import { SDSConnection } from "../sds/SDSConnection";
 import { Operations, ParameterNames } from "../sds/SDSMessage";
 import { SDSRequest } from "../sds/SDSRequest";
-import { JANUSClass } from "./JANUSClass";
+import { SDSSimpleMessage } from "../sds/SDSSimpleMessage";
+import { JANUSClass, OperationReturnValue } from "./JANUSClass";
 import { PDObject } from "./PDObject";
 
 /** Id of a logged in user */
@@ -18,6 +19,29 @@ export class PDClass extends JANUSClass {
 	constructor(sdsConnection: SDSConnection) {
 		super(sdsConnection);
 		this.userIds = new Map();
+	}
+
+	/**
+	 * Executes an operation on the JANUS-server
+	 * @todo This function is untested
+	 * @param operation Name of the operation
+	 * @param parameters The parameters of the operation
+	 * @param parametersPDO TODO
+	 * @returns Execution result of the operation
+	 */
+	public callOperation(operation: string, parameters?: string[], pdObjects?: PDObject[]): Promise<number> {
+		return this.callOperationInternal(false, operation, parameters, pdObjects) as Promise<number>;
+	}
+
+	/**
+	 * Executes an operation on the JANUS-server asynchronously
+	 * @todo This function is untested
+	 * @param operation Name of the operation
+	 * @param parameters The parameters of the operation
+	 * @param parametersPDO TODO
+	 */
+	public callOperationAsync(operation: string, parameters?: string[], pdObjects?: PDObject[]): Promise<void> {
+		return this.callOperationInternal(true, operation, parameters, pdObjects) as Promise<void>;
 	}
 
 	/**
@@ -143,6 +167,55 @@ export class PDClass extends JANUSClass {
 			} else {
 				const pdObject = new PDObject(this.sdsConnection, oId);
 				resolve(pdObject);
+			}
+		});
+	}
+
+	/**
+	 * Executes an operation on the JANUS-server.
+	 * @param operation Name of the operation
+	 * @param parameters The parameters of the operation
+	 * @param parametersPDO TODO
+	 */
+	private callOperationInternal(async: boolean, operation: string, parameters?: string[], pdObjects?: PDObject[]): Promise<OperationReturnValue> {
+		return new Promise<OperationReturnValue>(async (resolve, reject) => {
+			const request = new SDSRequest();
+			request.operation = (async) ? Operations.PDCLASS_CALL_ASYNC : Operations.PDCLASS_CALL_SYNC;
+			request.addParameter(ParameterNames.CLASS_NAME, operation);
+			let response;
+
+			if (Array.isArray(parameters)) {
+				// note: once the operation is parameterized, the operation code is different!
+				request.operation = (async) ? Operations.PDCLASS_CALL_ASYNC_PARAMETERIZED : Operations.PDCLASS_CALL_SYNC_PARAMETERIZED;
+
+				if (parameters.length > 0) {
+					request.addParameter(ParameterNames.PARAMETER, parameters);
+				}
+
+				if (Array.isArray(pdObjects) && pdObjects.length > 0) {
+					request.addParameter(ParameterNames.PARAMETER_PDO, pdObjects.map((pdObject: PDObject): string => pdObject.oId));
+				}
+				response = await this.sdsConnection.send(request);
+			} else {
+				if (async) {
+					response = await this.sdsConnection.send(request);
+				} else {
+					response = await this.sdsConnection.sendSimple(request);
+				}
+			}
+
+			if (async) {
+				// the server doesn't wait for the operation to finish
+				// so we have no clue about the success or failure of the execution
+				resolve();
+			} else {
+				if (response instanceof SDSSimpleMessage) {
+					const result = response.result;
+					resolve(result);
+				} else {
+					const result = response.getParameter(ParameterNames.RETURN_VALUE) as number;
+					resolve(result);
+				}
 			}
 		});
 	}

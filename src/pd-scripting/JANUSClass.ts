@@ -1,6 +1,9 @@
 import { SDSConnection } from "../sds/SDSConnection";
 import { PDMeta } from "./PDMeta";
 
+/** Return value of a server operation */
+export type OperationReturnValue = string | string[] | number | undefined;
+
 /**
  * Callback type to convert an error code to an user friendly string
  * The callback function can be PDMeta.getString or PDMeta.errorMessage
