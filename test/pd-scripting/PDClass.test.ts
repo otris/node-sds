@@ -118,6 +118,23 @@ describe("Tests for the PDClass-library of the JANUS-application", async () => {
 			.to.be.eventually.rejectedWith(Error, `The object with id '456:123' does not exists`);
 	});
 
+	(!isLiveMode()) ? it.skip : it.only("callOperationAsync no params", async () => {
+		const ret = await sdsConnection.PDClass.callOperationAsync("PortalScript.noOperation");
+		expect(ret).to.eq(undefined);
+	});
+	(!isLiveMode()) ? it.skip : it("callOperation sync no params", async () => {
+		const ret = await sdsConnection.PDClass.callOperation("PortalScript.noOperation");
+		expect(ret).to.eq(0);
+	});
+	(!isLiveMode()) ? it.skip : it("callOperationAsync with params", async () => {
+		const ret = await sdsConnection.PDClass.callOperationAsync("PortalScript.runScript", ["noScript"]);
+		expect(ret).to.eq(undefined);
+	});
+	(!isLiveMode()) ? it.skip : it("callOperation sync with params", async () => {
+		const ret = await sdsConnection.PDClass.callOperation("PortalScript.runScript", ["noScript"]);
+		expect(ret).to.eq(-1);
+	});
+
 	after(() => {
 		sdsConnection.disconnect();
 		mockedJANUSServer.close();

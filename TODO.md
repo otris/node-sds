@@ -1,8 +1,8 @@
 ### TODOs
 | Filename | line # | TODO
 |:------|:------:|:------
-| src/pd-scripting/PDClass.ts | 25 | This function is untested
-| src/pd-scripting/PDClass.ts | 37 | This function is untested
+| src/pd-scripting/PDClass.ts | 26 | This function is untested
+| src/pd-scripting/PDClass.ts | 38 | This function is untested
 | src/pd-scripting/PDObject.ts | 27 | Fetch this property if it's not set
 | src/pd-scripting/PDObject.ts | 33 | Fetch this property if it's not set
 | src/pd-scripting/PDObject.ts | 44 | This function is untested
