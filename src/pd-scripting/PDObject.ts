@@ -1,6 +1,7 @@
 import { SDSConnection } from "../sds/SDSConnection";
 import { Operations, ParameterNames } from "../sds/SDSMessage";
 import { SDSRequest } from "../sds/SDSRequest";
+import { SDSSimpleMessage } from "../sds/SDSSimpleMessage";
 import { JANUSClass, OperationReturnValue } from "./JANUSClass";
 
 export class PDObject extends JANUSClass {
@@ -139,6 +140,7 @@ export class PDObject extends JANUSClass {
 			request.oId = this.oId;
 			request.operation = (async) ? Operations.PDOBJECT_CALL_ASYNC : Operations.PDOBJECT_CALL_SYNC;
 			request.addParameter(ParameterNames.CLASS_NAME, operation);
+			let response;
 
 			if (Array.isArray(parameters)) {
 				// note: once the operation is parameterized, the operation code is different!
@@ -151,16 +153,23 @@ export class PDObject extends JANUSClass {
 				if (Array.isArray(pdObjects) && pdObjects.length > 0) {
 					request.addParameter(ParameterNames.PARAMETER_PDO, pdObjects.map((pdObject: PDObject): string => pdObject.oId));
 				}
+				response = await this.sdsConnection.send(request);
+			} else {
+				response = await this.sdsConnection.sendSimple(request);
 			}
 
-			const response = await this.sdsConnection.send(request);
 			if (async) {
 				// the server doesn't wait for the operation to finish
 				// so we have no clue about the success or failure of the execution
 				resolve();
 			} else {
-				const result = response.getParameter(ParameterNames.RETURN_VALUE) as number;
-				resolve(result);
+				if (response instanceof SDSSimpleMessage) {
+					const result = response.result;
+					resolve(result);
+				} else {
+					const result = response.getParameter(ParameterNames.RETURN_VALUE) as number;
+					resolve(result);
+				}
 			}
 		});
 	}
