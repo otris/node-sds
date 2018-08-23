@@ -155,7 +155,11 @@ export class PDObject extends JANUSClass {
 				}
 				response = await this.sdsConnection.send(request);
 			} else {
-				response = await this.sdsConnection.sendSimple(request);
+				if (async) {
+					response = await this.sdsConnection.send(request);
+				} else {
+					response = await this.sdsConnection.sendSimple(request);
+				}
 			}
 
 			if (async) {
